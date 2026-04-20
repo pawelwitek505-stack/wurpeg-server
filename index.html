@@ -553,6 +553,13 @@
       font-size: 28px;
       color: #f5e6c8;
     }
+    .equip-slot.has-item {
+      cursor: pointer;
+    }
+    .equip-slot.has-item:hover {
+      background: rgba(255, 215, 0, 0.16);
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.18);
+    }
     .equip-slot .slot-item {
       display: flex;
       align-items: center;
@@ -1269,6 +1276,41 @@
     gold: 450
   };
 
+  const bossLootTable = {
+    srodziemie: [
+      { name: "Płomień Bal'roga", slot: 'weapon', atk: 18, def: 2, speed: 2, value: 140, level: 4 },
+      { name: "Hełm Płomiennej Otchłani", slot: 'helm', atk: 2, def: 12, speed: 0, value: 130, level: 4 },
+      { name: "Amulet Upadłego Ognia", slot: 'amulet', atk: 10, def: 4, speed: 1, value: 135, level: 4 },
+      { name: "Pierścień Cienia i Żaru", slot: 'ring', atk: 5, def: 7, speed: 2, value: 128, level: 4 }
+    ],
+    astral: [
+      { name: 'Astralne Ostrze Władcy', slot: 'weapon', atk: 28, def: 4, speed: 4, value: 240, level: 5 },
+      { name: 'Korona Pustki', slot: 'helm', atk: 3, def: 18, speed: 2, value: 225, level: 5 },
+      { name: 'Amulet Gwiezdnego Rdzenia', slot: 'amulet', atk: 14, def: 6, speed: 3, value: 235, level: 5 },
+      { name: 'Pierścień Astralnego Węzła', slot: 'ring', atk: 8, def: 10, speed: 3, value: 230, level: 5 },
+      { name: 'Buty Przeskoku Pustki', slot: 'boots', atk: 2, def: 8, speed: 8, value: 220, level: 5 }
+    ]
+  };
+
+  function grantBossLoot(worldId) {
+    if (!loggedUser) return [];
+    const pool = bossLootTable[worldId] || [];
+    if (!pool.length) return [];
+
+    const guaranteed = JSON.parse(JSON.stringify(pool[Math.floor(Math.random() * pool.length)]));
+    const rewards = [guaranteed];
+
+    const bonusChance = worldId === 'astral' ? 0.4 : 0.25;
+    if (Math.random() < bonusChance && pool.length > 1) {
+      const bonusPool = pool.filter(item => item.name !== guaranteed.name);
+      const bonus = JSON.parse(JSON.stringify(bonusPool[Math.floor(Math.random() * bonusPool.length)]));
+      rewards.push(bonus);
+    }
+
+    loggedUser.inventory.push(...rewards);
+    return rewards;
+  }
+
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
   function getClassColor(name) {
@@ -1390,7 +1432,7 @@
   async function saveProgress() {
     if (!loggedUser) return true;
     try {
-      const res = await fetch('http://localhost:3000/save-progress', {
+      const res = await fetch('https://wurpeg-server.onrender.com/save-progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: loggedUser.username, user: loggedUser })
@@ -1787,6 +1829,14 @@
     const nameEl = document.getElementById(idName);
     const statsEl = document.getElementById(idStats);
     if (!nameEl || !statsEl) return;
+
+    const slotBox = nameEl.closest('.equip-slot');
+    if (slotBox) {
+      slotBox.classList.toggle('has-item', !!item);
+      slotBox.onclick = item ? () => unequipItem(item.slot) : null;
+      slotBox.title = item ? 'Kliknij, aby zdjąć przedmiot' : '';
+    }
+
     nameEl.innerHTML = item ? `<img src="${itemIcon(item)}" style="width:28px;height:28px;object-fit:contain;" onerror="this.outerHTML='${itemFallbackEmoji(item)}'"> <span>${item.name}</span>` : '·';
     statsEl.innerText = item ? `lvl ${item.level || 1} | atk ${scaleItem(item).atk} | def ${scaleItem(item).def}` : '-';
   }
@@ -2057,11 +2107,12 @@
       if (loggedUser && loggedUser.hp > 0 && !loggedUser.defeatedBosses.includes("Bal'rog")) {
         loggedUser.defeatedBosses.push("Bal'rog");
         loggedUser.world = 'srodziemie';
+        const loot = grantBossLoot('srodziemie');
         renderWorldsNav();
         renderLocations();
         renderPlayer();
         await saveProgress();
-        setOutput("🔥 Bal'rog został pokonany! Odblokowano świat: Śródziemie.");
+        setOutput(`🔥 Bal'rog został pokonany! Odblokowano świat: Śródziemie. Łup bossa: ${loot.map(item => item.name).join(', ')}.`);
       }
       return;
     }
@@ -2074,11 +2125,12 @@
       if (loggedUser && loggedUser.hp > 0 && !loggedUser.defeatedBosses.includes('Władca Astralu')) {
         loggedUser.defeatedBosses.push('Władca Astralu');
         loggedUser.world = 'astral';
+        const loot = grantBossLoot('astral');
         renderWorldsNav();
         renderLocations();
         renderPlayer();
         await saveProgress();
-        setOutput('🌌 Władca Astralu został pokonany! Otchłań Astralna została odblokowana.');
+        setOutput(`🌌 Władca Astralu został pokonany! Otchłań Astralna została odblokowana. Łup bossa: ${loot.map(item => item.name).join(', ')}.`);
       }
     }
   }
@@ -2164,7 +2216,7 @@
 
   async function registerUser() {
     try {
-      const res = await fetch('http://localhost:3000/register', {
+      const res = await fetch('https://wurpeg-server.onrender.com/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2184,7 +2236,7 @@
     try {
       const username = document.getElementById('logUser').value;
       const password = document.getElementById('logPass').value;
-      const res = await fetch('http://localhost:3000/login', {
+      const res = await fetch('https://wurpeg-server.onrender.com/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -2605,6 +2657,17 @@ Przez chwilę nic się nie dzieje... aż zaczynasz się tym stresować bardziej 
     renderPlayer();
     await saveProgress();
     setOutput(`Założono przedmiot: ${item.name}`);
+  }
+
+  async function unequipItem(slot) {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+    const item = loggedUser.equipment?.[slot];
+    if (!item) return;
+    loggedUser.inventory.push(item);
+    loggedUser.equipment[slot] = null;
+    renderPlayer();
+    await saveProgress();
+    setOutput(`Zdjęto przedmiot: ${item.name}`);
   }
 
   async function sellItem(index) {
