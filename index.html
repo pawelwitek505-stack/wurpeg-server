@@ -1,0 +1,2720 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wurpeg Arena</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Uncial+Antiqua&family=MedievalSharp&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      transition: background 0.5s ease;
+      margin: 0;
+      font-family: 'MedievalSharp', 'Cinzel', serif;
+      background: radial-gradient(circle at top, #3b2f1b, #1b140a);
+      color: #f5e6c8;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* 🔥 RPG ATMOSFERA - WARSTWY TŁA */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url('https://www.transparenttextures.com/patterns/old-map.png');
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(255,215,0,0.08), transparent 40%),
+                  radial-gradient(circle at 80% 70%, rgba(255,0,0,0.06), transparent 40%),
+                  radial-gradient(circle at 50% 50%, rgba(0,0,0,0.4), transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .app-shell {
+      display: grid;
+      grid-template-columns: 260px 1fr 260px;
+      min-height: 100vh;
+    }
+    .sidebar {
+      background: linear-gradient(180deg, #2a1f0f, #120d05);
+      border-right: 2px solid #5a3e1b;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .rightbar {
+      background: linear-gradient(180deg, #120d05, #2a1f0f);
+      border-left: 2px solid #5a3e1b;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .rightbar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: url('https://www.transparenttextures.com/patterns/dark-leather.png');
+      opacity: 0.2;
+      pointer-events: none;
+    }
+
+    .sidebar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: url('https://www.transparenttextures.com/patterns/dark-leather.png');
+      opacity: 0.2;
+      pointer-events: none;
+    }
+    .brand {
+      padding: 12px;
+      border: 1px solid #7a5a2b;
+      border-radius: 10px;
+      background: rgba(255, 215, 0, 0.05);
+      margin-bottom: 16px;
+    }
+    .brand h1 {
+      font-family: 'Uncial Antiqua', cursive;
+      font-size: 22px;
+      margin: 0;
+      color: #ffd700;
+    }
+    .nav-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid #7a5a2b;
+      background: rgba(0,0,0,0.4);
+      color: #f5e6c8;
+      cursor: pointer;
+      border-radius: 10px;
+      text-align: left;
+      font-family: 'Cinzel', serif;
+    }
+    .nav-btn.active {
+      background: linear-gradient(135deg, #a67c00, #5c3b00);
+      color: #fff;
+    }
+    .nav-submenu {
+      display: none;
+      padding-left: 10px;
+      margin-top: 6px;
+      margin-bottom: 8px;
+      border-left: 1px solid rgba(212, 175, 55, 0.25);
+    }
+    .nav-submenu.open {
+      display: block;
+    }
+    .nav-subbtn {
+      width: 100%;
+      margin-top: 6px;
+      padding: 8px 10px;
+      border: 1px solid rgba(122, 90, 43, 0.7);
+      background: rgba(0,0,0,0.25);
+      color: #f5e6c8;
+      cursor: pointer;
+      border-radius: 8px;
+      text-align: left;
+      font-family: inherit;
+      font-size: 13px;
+    }
+    .nav-subbtn:hover {
+      background: rgba(255,255,255,0.08);
+    }
+    .main {
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* 🌊 TRYB MORSKI */
+    body.sea-mode {
+      background: radial-gradient(circle at top, #0b3d5c, #02121c);
+    }
+
+    body.sea-mode::before {
+      background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+      opacity: 0.15;
+    }
+
+    body.sea-mode::after {
+      background: radial-gradient(circle at 30% 20%, rgba(0,150,255,0.2), transparent 40%),
+                  radial-gradient(circle at 70% 80%, rgba(0,80,150,0.2), transparent 50%);
+    }
+
+    .island-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .island-card {
+      border: 2px solid #7a5a2b;
+      border-radius: 12px;
+      padding: 16px;
+      background: rgba(0,0,0,0.4);
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+
+    .island-card:hover {
+      transform: scale(1.05);
+      border-color: #00c3ff;
+    }
+
+    .island-title {
+      font-size: 20px;
+      color: #00c3ff;
+      margin-bottom: 8px;
+    }
+
+    .sea-route-wrap {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .sea-route-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .sea-route-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+    }
+
+    .sea-tile {
+      min-height: 44px;
+      border-radius: 10px;
+      border: 1px solid #4a6f86;
+      background: rgba(10, 35, 52, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .sea-tile.done {
+      background: linear-gradient(135deg, rgba(20,120,160,0.85), rgba(17,73,95,0.95));
+      border-color: #73d7ff;
+    }
+
+    .sea-tile.current {
+      background: linear-gradient(135deg, rgba(255,215,0,0.95), rgba(180,120,0,0.95));
+      border-color: #fff2a8;
+      color: #1c1205;
+      transform: scale(1.04);
+      box-shadow: 0 0 12px rgba(255,215,0,0.45);
+    }
+
+    .sea-tile.boss {
+      border-color: #ff6b6b;
+      background: linear-gradient(135deg, rgba(120,15,15,0.9), rgba(55,5,5,0.95));
+    }
+
+    .sea-tile.upcoming {
+      opacity: 0.8;
+    }
+
+    .sea-summary {
+      border: 1px solid #4a6f86;
+      border-radius: 10px;
+      padding: 10px;
+      background: rgba(0,0,0,0.22);
+    }
+
+    .main::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.03), transparent 60%);
+      pointer-events: none;
+    }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .panel {
+      background: rgba(30, 20, 10, 0.92);
+      border: 2px solid #7a5a2b;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+      position: relative;
+      z-index: 1;
+      backdrop-filter: blur(2px);
+    }
+    .top-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      border: 2px solid #7a5a2b;
+      border-radius: 12px;
+      background: rgba(22, 14, 7, 0.95);
+    }
+    .top-status.hidden { display: none; }
+    .class-picker.hidden { display: none; }
+    .class-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .class-pick-btn {
+      text-align: left;
+      min-height: 96px;
+    }
+    .top-status-name {
+      font-weight: 700;
+      color: #ffd700;
+    }
+    .top-status-meta {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: 14px;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .town-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .stack { display: grid; gap: 16px; }
+    .character-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      justify-items: center;
+    }
+    #authPanel {
+      max-width: 420px;
+      width: 100%;
+    }
+    .logged-layout {
+      grid-template-columns: 1fr 1fr;
+      justify-items: stretch;
+    }
+    h1, h2, h3 {
+      font-family: 'Uncial Antiqua', cursive;
+      color: #ffd700;
+      margin-top: 0;
+    }
+    .subtitle { opacity: 0.8; margin-top: -8px; margin-bottom: 16px; }
+    input, select {
+      width: 100%;
+      background: #1b140a;
+      border: 1px solid #7a5a2b;
+      color: #f5e6c8;
+      padding: 10px;
+      border-radius: 8px;
+      font-family: inherit;
+    }
+    button {
+      background: linear-gradient(135deg, #7a5a2b, #3d2a14);
+      color: #fff;
+      border: 1px solid #d4af37;
+      padding: 10px 12px;
+      cursor: pointer;
+      border-radius: 8px;
+      font-family: 'Cinzel', serif;
+    }
+    button:hover { background: linear-gradient(135deg, #d4af37, #7a5a2b); }
+    .button-danger {
+      background: linear-gradient(135deg, #8b2d1a, #4a160c);
+    }
+    .button-danger:hover {
+      background: linear-gradient(135deg, #b53b24, #6e2212);
+    }
+    .art {
+      font-size: 80px;
+      text-align: center;
+      padding: 10px 0;
+    }
+    .hero-art { color: #4aa3ff; }
+    .hero-img { width: 96px; height: 96px; object-fit: contain; display:block; margin: 0 auto; filter: drop-shadow(0 0 6px rgba(0,0,0,0.6)); }
+    .enemy-art { color: #ff4a4a; }
+    .enemy-img { width:120px; height:120px; object-fit:contain; display:block; margin:0 auto; filter: drop-shadow(0 0 8px rgba(0,0,0,0.7)); }
+    .town-art { font-size: 50px; text-align: center; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .stat-box {
+      border: 1px solid #7a5a2b;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .stat-label { font-size: 12px; opacity: 0.75; }
+    .stat-value { font-size: 20px; font-weight: 700; margin-top: 4px; }
+    .hp-wrap, .exp-wrap { margin-top: 12px; }
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .bar {
+      height: 16px;
+      border: 1px solid #7a5a2b;
+      background: #1a1208;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar-fill-hp {
+      height: 100%;
+      background: linear-gradient(90deg, #4caf50, #b4ff72);
+      width: 100%;
+      transition: width 0.25s ease;
+    }
+    .bar-fill-exp {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #8ec5ff);
+      width: 0%;
+      transition: width 0.25s ease;
+    }
+
+    /* 💊 HEAL TILE */
+    .heal-tile {
+      margin-top: 10px;
+      padding: 8px;
+      background: #2ecc71;
+      color: #000;
+      text-align: center;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .heal-tile:hover {
+      background: #27ae60;
+    }
+    .controls { display: grid; gap: 10px; }
+    .town-actions { display: grid; gap: 10px; margin-top: 12px; }
+    .merge-box {
+      border: 1px solid #7a5a2b;
+      border-radius: 10px;
+      padding: 12px;
+      background: rgba(0,0,0,0.18);
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .dev-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .path-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .path-card {
+      border: 1px solid #7a5a2b;
+      border-radius: 10px;
+      padding: 12px;
+      background: rgba(0,0,0,0.2);
+    }
+    .path-card.active {
+      border-color: #ffd700;
+      box-shadow: 0 0 10px rgba(255,215,0,0.25);
+    }
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+    .item-card {
+      border: 1px solid #7a5a2b;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    /* RARITY KOLORY */
+    .item-lvl-1 { background: rgba(120,120,120,0.2); border-color:#888; }
+    .item-lvl-2 { background: rgba(0,255,100,0.15); border-color:#2ecc71; }
+    .item-lvl-3 { background: rgba(180,0,255,0.15); border-color:#9b59b6; }
+    .item-lvl-4 { background: rgba(255,215,0,0.18); border-color:#f1c40f; }
+    .item-lvl-5 { background: rgba(255,50,50,0.18); border-color:#e74c3c; box-shadow:0 0 10px rgba(255,0,0,0.4); }
+
+    /* 🔥 BOSKI ITEM */
+    .legendary {
+      border: 2px solid gold !important;
+      background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,255,255,0.05));
+      box-shadow: 0 0 12px rgba(255,215,0,0.6);
+      position: relative;
+    }
+
+    .legendary::after {
+      content: "✨";
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      font-size: 18px;
+      animation: glow 1.5s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { transform: scale(1); opacity: 0.6; }
+      to { transform: scale(1.3); opacity: 1; }
+    }
+    .item-head {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .item-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      border: 1px solid #a5823c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 215, 0, 0.06);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .item-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 4px rgba(0,0,0,0.6));
+    }
+    .item-title {
+      font-weight: 700;
+      color: #ffd700;
+      margin-bottom: 6px;
+    }
+    .item-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .item-meta {
+      font-size: 13px;
+      opacity: 0.85;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+    .equipment-figure {
+      position: relative;
+      min-height: 560px;
+      margin-top: 16px;
+      border: 1px solid rgba(212, 175, 55, 0.18);
+      border-radius: 14px;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.03), rgba(0,0,0,0.18));
+      overflow: hidden;
+    }
+    .body-silhouette {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 360px;
+      opacity: 0.16;
+      filter: grayscale(1);
+      pointer-events: none;
+    }
+    .equip-slot {
+      position: absolute;
+      width: 74px;
+      height: 74px;
+      border: 1px solid #a5823c;
+      border-radius: 12px;
+      background: rgba(255, 215, 0, 0.08);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: #f5e6c8;
+    }
+    .equip-slot .slot-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      font-weight: 700;
+      color: #ffd700;
+      text-align: center;
+      font-size: 28px;
+      gap: 0;
+    }
+    .equip-slot .slot-item span {
+      display: none;
+    }
+    .equip-slot .slot-name {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: -20px;
+      font-size: 11px;
+      white-space: nowrap;
+      opacity: 0.8;
+    }
+    .equip-slot .small {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -28px;
+      width: 120px;
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.2;
+      opacity: 0.8;
+    }
+    .slot-helm { top: 18px; left: 50%; transform: translateX(-50%); }
+    .slot-weapon { top: 170px; right: 28px; }
+    .slot-armor { top: 165px; left: 50%; transform: translateX(-50%); }
+    .slot-artifact { top: 170px; left: 28px; }
+    .slot-belt { top: 300px; left: 50%; transform: translateX(-50%); }
+    .slot-boots { bottom: 34px; left: 50%; transform: translateX(-50%); }
+    .slot-ring { bottom: 108px; right: 44px; }
+    .slot-amulet { bottom: 108px; left: 44px; }
+    .slot {
+      border: 1px dashed #a5823c;
+      border-radius: 10px;
+      padding: 12px;
+      background: rgba(0,0,0,0.18);
+      min-height: 90px;
+    }
+    .slot-name {
+      font-size: 12px;
+      opacity: 0.75;
+      margin-bottom: 8px;
+    }
+    .slot-item {
+      font-weight: 700;
+      color: #ffd700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .small { font-size: 13px; opacity: 0.85; }
+    .log {
+      background: #120d05;
+      border: 1px solid #7a5a2b;
+      padding: 14px;
+      font-family: monospace;
+      border-radius: 8px;
+      min-height: 200px;
+      max-height: 360px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .monster-list { display: grid; gap: 10px; margin-top: 12px; }
+    .monster-row {
+      border: 1px solid #7a5a2b;
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0,0,0,0.2);
+      gap: 12px;
+    }
+    .auth-panel.hidden { display: none; }
+    .collapsed-body { display: none; }
+    .collapsed-card.open .collapsed-body { display: grid; }
+    .collapsed-card .collapsed-toggle { width: 100%; text-align: left; }
+    .arena-fight-card {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* PANEL WALKI */
+    .fight-panel {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .fight-panel.active { display: grid; }
+    .fight-side {
+      border: 1px solid #7a5a2b;
+      border-radius: 10px;
+      padding: 10px;
+      background: rgba(0,0,0,0.25);
+    }
+    .fight-title { text-align:center; font-weight:700; margin-bottom:8px; }
+    @media (max-width: 980px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .grid-2, .grid-3, .town-grid, .inventory-grid, .equipment-grid, .character-layout { grid-template-columns: 1fr; }
+      .top-status { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>⚔️ WURPEG ⚔️</h1>
+    </div>
+
+    <button class="nav-btn active" id="nav-character" onclick="showScreen('character')">🧙 Postać</button>
+
+    <button class="nav-btn" id="nav-classes" onclick="showScreen('classes')">🧙 Klasy</button>
+
+    <button class="nav-btn" id="nav-arena" onclick="showScreen('arena')">⚔️ Arena</button>
+
+    <button class="nav-btn" id="nav-monsters" onclick="showScreen('monsters'); toggleNavGroup('monsters')">👹 Potwory</button>
+    <div class="nav-submenu" id="submenu-monsters"></div>
+
+    <button class="nav-btn" id="nav-town" onclick="showScreen('town'); toggleNavGroup('town')">🏰 Miasto</button>
+    <div class="nav-submenu" id="submenu-town">
+      <button class="nav-subbtn" onclick="openTownCard('townMerchantCard')">🧺 Handlarz</button>
+      <button class="nav-subbtn" onclick="openTownCard('townHealerCard')">✨ Uzdrowiciel</button>
+      <button class="nav-subbtn" onclick="openTownCard('townBlacksmithCard')">⚒️ Kowal</button>
+      <button class="nav-subbtn" onclick="openTownCard('townQuestCard')">📜 Mistrz zadań</button>
+    </div>
+
+    <button class="nav-btn" id="nav-bag" onclick="showScreen('character'); openBagAndHighlight(); toggleNavGroup('bag')">🎒 Plecak</button>
+    <div class="nav-submenu" id="submenu-bag"></div>
+
+    <button class="nav-btn" id="nav-locations" onclick="showScreen('locations'); toggleNavGroup('locations')">🗺️ Lokacje</button>
+    <div class="nav-submenu" id="submenu-locations"></div>
+
+    
+  <button class="nav-btn" id="nav-sea" onclick="showScreen('sea')">🌊 Morska misja</button>
+
+
+    <button class="nav-btn" id="nav-worlds" onclick="showScreen('worlds'); toggleNavGroup('worlds')">🌍 Światy</button>
+    <div class="nav-submenu" id="submenu-worlds"></div>
+</aside>
+
+  <main class="main">
+    <div class="top-status hidden" id="topStatusBar">
+      <div>
+        <div class="top-status-name" id="topPlayerName">Niezalogowany</div>
+        <div class="top-status-meta">
+          <span>Poziom: <strong id="topPlayerLevel">1</strong></span>
+          <span>Złoto: <strong id="topPlayerGold">0</strong></span>
+          <span>PW: <strong id="topPlayerHp">0/0</strong></span>
+        </div>
+      </div>
+      <button onclick="logoutUser()">Wyloguj</button>
+    </div>
+
+    <div class="panel class-picker hidden" id="classChoicePanel">
+      <h2>Wybierz klasę</h2>
+      <div class="small">Wybór klasy ustawisz po zalogowaniu. Po wyborze okno zniknie.</div>
+      <div class="class-picker-grid" id="classChoiceGrid"></div>
+    </div>
+
+        <section id="screen-character" class="screen active stack">
+      <div>
+        <h1>Postać</h1>
+        <div class="subtitle">Twój główny panel bohatera, ekwipunku i plecaka.</div>
+      </div>
+
+      <div class="character-layout">
+        <div class="panel auth-panel" id="authPanel">
+          <h2>Logowanie / Rejestracja</h2>
+          <div class="controls">
+            <input id="regUser" placeholder="Nowa nazwa użytkownika">
+            <input id="regPass" type="password" placeholder="Hasło">
+            <input id="regEmail" placeholder="Email">
+            
+            <button onclick="registerUser()">Załóż konto</button>
+            <hr style="border-color:#7a5a2b; width:100%; opacity:0.3;">
+            <input id="logUser" placeholder="Login">
+            <input id="logPass" type="password" placeholder="Hasło">
+            <button onclick="loginUser()">Zaloguj</button>
+          </div>
+        </div>
+
+        <div class="panel auth-only" id="characterStatsPanel">
+          <h2>Karta postaci</h2>
+          <div class="art hero-art" id="heroArt">🧙‍♂️</div>
+          <div id="heroPreview" style="display:none;">🧙‍♂️</div>
+          <div id="playerName" class="item-title">Brak</div>
+          <div class="hp-wrap">
+            <div class="bar-label"><span>Punkty życia</span><span id="playerHpText">0 / 0</span></div>
+            <div class="bar"><div id="playerHpBar" class="bar-fill-hp"></div></div>
+            <div id="healTile" class="heal-tile" style="display:none;" onclick="healPlayer()">💊 Ulecz</div>
+          </div>
+          <div class="exp-wrap">
+            <div class="bar-label"><span>Doświadczenie</span><span id="playerExpText">0 / 0</span></div>
+            <div class="bar"><div id="playerExpBar" class="bar-fill-exp"></div></div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-box"><div class="stat-label">Poziom</div><div class="stat-value" id="playerLevel">1</div></div>
+            <div class="stat-box"><div class="stat-label">Złoto</div><div class="stat-value" id="playerGold">0</div></div>
+            <div class="stat-box"><div class="stat-label">Atak</div><div class="stat-value" id="playerAtk">0</div></div>
+            <div class="stat-box"><div class="stat-label">Obrona</div><div class="stat-value" id="playerDef">0</div></div>
+            <div class="stat-box"><div class="stat-label">Szybkość</div><div class="stat-value" id="playerSpeed">0</div></div>
+            <div class="stat-box"><div class="stat-label">Status</div><div class="stat-value" id="playerStatus">offline</div></div>
+          </div>
+        </div>
+
+        <div class="panel auth-only">
+          <h2>Założony ekwipunek</h2>
+          <div class="equipment-figure">
+            <div class="body-silhouette">🧍</div>
+
+            <div class="equip-slot slot-helm">
+              <div class="slot-name">Hełm</div>
+              <div class="slot-item" id="slotHelm">·</div>
+              <div class="small" id="slotHelmStats">-</div>
+            </div>
+
+            <div class="equip-slot slot-artifact">
+              <div class="slot-name">Artefakt</div>
+              <div class="slot-item" id="slotArtifact">Brak</div>
+              <div class="small" id="slotArtifactStats">-</div>
+            </div>
+
+            <div class="equip-slot slot-armor">
+              <div class="slot-name">Zbroja</div>
+              <div class="slot-item" id="slotArmor">Brak</div>
+              <div class="small" id="slotArmorStats">-</div>
+            </div>
+
+            <div class="equip-slot slot-weapon">
+              <div class="slot-name">Broń</div>
+              <div class="slot-item" id="slotWeapon">Brak</div>
+              <div class="small" id="slotWeaponStats">-</div>
+            </div>
+
+            <div class="equip-slot slot-belt">
+              <div class="slot-name">Pas</div>
+              <div class="slot-item" id="slotBelt">Brak</div>
+              <div class="small" id="slotBeltStats">-</div>
+            </div>
+
+            <div class="equip-slot slot-boots">
+              <div class="slot-name">Buty</div>
+              <div class="slot-item" id="slotBoots">·</div>
+              <div class="small" id="slotBootsStats">-</div>
+            </div>
+
+            <div class="equip-slot slot-amulet">
+              <div class="slot-name">Amulet</div>
+              <div class="slot-item" id="slotAmulet">·</div>
+              <div class="small" id="slotAmuletStats">-</div>
+            </div>
+
+            <div class="equip-slot slot-ring">
+              <div class="slot-name">Pierścień</div>
+              <div class="slot-item" id="slotRing">·</div>
+              <div class="small" id="slotRingStats">-</div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+
+        <div class="panel auth-only" style="margin-top:10px;">
+          <h2>Plecak</h2>
+          <div class="inventory-grid" id="inventoryGrid"></div>
+        </div>
+    </section>
+
+    <section id="screen-classes" class="screen stack">
+      <div>
+        <h1>Klasy</h1>
+        <div class="subtitle">Każda klasa daje inną pasywną zdolność bojową.</div>
+      </div>
+      <div class="grid-2" id="classesGrid"></div>
+
+      <div class="panel auth-only" id="developmentPanel">
+        <h2>Rozwój postaci</h2>
+        <div class="small">Punkty rozwoju zdobywasz za każdy poziom. Specjalizację wybierasz od 5 poziomu.</div>
+        <div style="margin:10px 0 14px 0;"><strong>Punkty rozwoju:</strong> <span id="skillPointsValue">0</span></div>
+        <div class="dev-grid">
+          <button onclick="spendSkillPoint('atk')">+1 Atak</button>
+          <button onclick="spendSkillPoint('def')">+1 Obrona</button>
+          <button onclick="spendSkillPoint('speed')">+1 Szybkość</button>
+          <button onclick="spendSkillPoint('hp')">+10 HP</button>
+        </div>
+        <div style="margin-top:16px;">
+          <h3 style="margin-bottom:8px;">Specjalizacja klasy</h3>
+          <div class="small" id="classPathInfo">Odblokowuje się od 5 poziomu.</div>
+          <div class="path-grid" id="classPathGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-arena" class="screen stack">
+      <div>
+        <h1>Arena Walki</h1>
+        <div class="subtitle">Prosty ekran walki. Wybierz potwora i walcz.</div>
+      </div>
+
+      <div class="panel arena-fight-card">
+        <h2>Cel</h2>
+        <div class="art enemy-art" id="enemyArt">👹</div>
+        <div id="enemyName" class="item-title">Brak przeciwnika</div>
+        <div class="small" id="enemyDesc">Wybierz potwora w zakładce Potwory.</div>
+        <div class="controls" style="margin-top:12px;">
+          <input id="fightAttacker" placeholder="Twoja nazwa">
+          <input id="fightDefender" placeholder="Wybrany przeciwnik">
+          <button onclick="fight()">⚔️ Walcz!</button>
+        </div>
+      </div>
+
+      <!-- PANEL WALKI -->
+      <div class="fight-panel" id="fightPanel">
+        <div class="fight-side">
+          <div class="fight-title">Bohater</div>
+          <div id="fightHeroStats"></div>
+        </div>
+        <div class="fight-side">
+          <div class="fight-title">Potwór</div>
+          <div id="fightMonsterStats"></div>
+        </div>
+      </div>
+    </section>
+
+    
+
+    
+
+    <section id="screen-monsters" class="screen stack">
+      <div>
+        <h1>Potwory</h1>
+        <div class="subtitle">Tutaj widzisz listę przeciwników i możesz od razu wybrać cel.</div>
+      </div>
+      <div class="panel">
+        <h2>Lista potworów</h2>
+        <div class="monster-list" id="monsterCenterList"></div>
+      </div>
+    </section>
+
+    <section id="screen-town" class="screen stack">
+      <div>
+        <h1>Miasto</h1>
+        <div class="subtitle">Po kliknięciu zakładki po lewej, tutaj pokazują się budynki miasta.</div>
+      </div>
+      <div class="town-grid">
+        <div class="panel collapsed-card" id="townMerchantCard">
+          <button class="collapsed-toggle" onclick="toggleTownCard('townMerchantCard')">🧺 Handlarz</button>
+          <div class="collapsed-body town-actions">
+            <p class="small">Kupuje i sprzedaje wyposażenie oraz podstawowe przedmioty.</p>
+            <button onclick="buyPotion()">Kup miksturę leczenia (10 złota)</button>
+            <button onclick="buySword()">Kup żelazny miecz (35 złota)</button>
+            <button onclick="buyRobe()">Kup szatę maga (30 złota)</button>
+            <button onclick="scrollToBagFromTown()">Przejdź do plecaka, by sprzedać łupy</button>
+          </div>
+        </div>
+        <div class="panel collapsed-card" id="townHealerCard">
+          <button class="collapsed-toggle" onclick="toggleTownCard('townHealerCard')">✨ Uzdrowiciel</button>
+          <div class="collapsed-body town-actions">
+            <p class="small">Przywraca pełne zdrowie bohatera.</p>
+            <button onclick="healPlayer()">Leczenie</button>
+          </div>
+        </div>
+        <div class="panel collapsed-card" id="townBlacksmithCard">
+          <button class="collapsed-toggle" onclick="toggleTownCard('townBlacksmithCard')">⚒️ Kowal</button>
+          <div class="collapsed-body town-actions">
+            <p class="small">Wzmacnia Twój oręż i pancerz.</p>
+            <button onclick="upgradeWeapon()">Ulepsz broń (poziom broni +1, koszt zależny od poziomu)</button>
+            <div class="merge-box">
+              <h3 style="margin:0;">Scalanie przedmiotów</h3>
+              <div class="small">Dwa identyczne przedmioty o tym samym poziomie tworzą jeden przedmiot poziom wyżej.</div>
+              <select id="mergeItem1"></select>
+              <select id="mergeItem2"></select>
+              <button onclick="mergeItems()">Scal przedmioty</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel collapsed-card" id="townQuestCard">
+          <button class="collapsed-toggle" onclick="toggleTownCard('townQuestCard')">📜 Mistrz zadań</button>
+          <div class="collapsed-body town-actions">
+            <p class="small">Daje zadania dla początkujących wojowników.</p>
+            <button onclick="acceptQuest()">Weź zadanie</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+
+    <section id="screen-locations" class="screen stack">
+      <div>
+        <h1>Lokacje</h1>
+        <div class="subtitle">Kliknij lokację i od razu ruszaj na wyprawę.</div>
+      </div>
+      <div class="grid-2" id="locationsCenterGrid"></div>
+    </section>
+
+    <section id="screen-sea" class="screen stack">
+      <div>
+        <h1>🌊 Morska misja</h1>
+        <div class="subtitle">Każda wyprawa morska to cała droga do wyspy. Każdy kafelek to kolejny etap rejsu.</div>
+      </div>
+
+      <div class="panel">
+        <h2>Wybierz wyspę</h2>
+        <div class="island-grid">
+          <div class="island-card">
+            <div class="art">🏝️</div>
+            <div class="island-title">Katos</div>
+            <div class="island-diff">10 etapów • bezpieczniejsza trasa</div>
+            <div class="small">Dobra na szybkie wyprawy i pewniejszy zarobek.</div>
+            <button onclick="startSeaAdventure('katos')">Wyrusz</button>
+          </div>
+
+          <div class="island-card">
+            <div class="art">🌴</div>
+            <div class="island-title">Le Oclaw</div>
+            <div class="island-diff">20 etapów • umiarkowane ryzyko</div>
+            <div class="small">Dłuższy rejs, mocniejsi wrogowie i lepsze nagrody.</div>
+            <button onclick="startSeaAdventure('leoclaw')">Wyrusz</button>
+          </div>
+
+          <div class="island-card">
+            <div class="art">🗿</div>
+            <div class="island-title">Puero Trico</div>
+            <div class="island-diff">30 etapów • bardzo ciężka wyprawa</div>
+            <div class="small">Mocno ryzykowna trasa. Duży zysk, ale łatwo z niej nie wrócić.</div>
+            <button onclick="startSeaAdventure('puerotrico')">Wyrusz</button>
+          </div>
+        </div>
+
+        <div class="sea-route-wrap" id="seaRouteWrap" style="display:none;">
+          <div class="sea-route-head">
+            <div>
+              <h3 id="seaRouteTitle" style="margin-bottom:6px;">Trasa rejsu</h3>
+              <div class="small" id="seaRouteMeta">Przygotuj się na podróż.</div>
+            </div>
+            <div class="sea-summary" id="seaRouteSummary">Brak aktywnej wyprawy.</div>
+          </div>
+          <div class="sea-route-grid" id="seaRouteGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-worlds" class="screen stack">
+      <div>
+        <h1>Światy</h1>
+        <div class="subtitle">Wybierz krainę i odkryj jej unikalne wyzwania.</div>
+      </div>
+
+      <div class="grid-3" id="worldsGrid">
+        <div class="panel">
+          <div style="font-size:50px; text-align:center;">🕳️</div>
+          <h3>Dungeon</h3>
+          <div class="small">Ciemne lochy pełne potworów i bossów.</div>
+          <div class="small" style="margin-top:8px; color:#9bff9b;">✅ Odblokowany</div>
+        </div>
+
+        <div class="panel">
+          <div style="font-size:50px; text-align:center;">🧝‍♂️</div>
+          <h3>Śródziemie</h3>
+          <div class="small">Klasyczna kraina fantasy – orki, elfy i epickie przygody.</div>
+          <div class="small" id="worldStateSrodziemie" style="margin-top:8px; color:#ffb3b3;">🔒 Pokonaj Bal'roga</div>
+          <button style="margin-top:12px; width:100%;" onclick="startWorldBossFight('srodziemie')">⚔️ Walka z bossem</button>
+        </div>
+
+        <div class="panel">
+          <div style="font-size:50px; text-align:center;">🌌</div>
+          <h3>Otchłań Astralna</h3>
+          <div class="small">Kosmiczny wymiar pełen dziwnych istot i nieznanej energii.</div>
+          <div class="small" id="worldStateAstral" style="margin-top:8px; color:#ffb3b3;">🔒 Pokonaj bossa Śródziemia</div>
+          <button style="margin-top:12px; width:100%;" onclick="startWorldBossFight('astral')">⚔️ Walka z bossem</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="rightbar">
+    <div class="panel" id="chaosLogPanel">
+      <h2>Zobacz coś narobił</h2>
+      <div id="output" class="log">Witaj w Wurpeg. Zaloguj się albo załóż konto.</div>
+    </div>
+  </aside>
+</div>
+
+<script>
+  const classColors = {
+    'Rycerz': '#d4af37',
+    'Simon': '#c0392b',
+    'Mag': '#8e44ad',
+    'Camilla': '#27ae60',
+    'Łucznik': '#2ecc71',
+    'Paladyn': '#f1c40f',
+    'Nekromanta': '#7f8c8d',
+    'Strażnik': '#3498db'
+  };
+
+  const classesData = [
+    { name: 'Rycerz', icon: '🛡️', passive: 'Kontraatak', desc: '18% szansy na kontratak za 40% obrażeń po otrzymaniu ciosu.' },
+    { name: 'Simon', icon: '🪓', passive: 'Krytyk', desc: '14% szansy na trafienie krytyczne za 170% obrażeń.' },
+    { name: 'Mag', icon: '🔮', passive: 'Ogłuszenie', desc: '10% szansy, by ogłuszyć przeciwnika na 1 turę.' },
+    { name: 'Camilla', icon: '☠️', passive: 'Trucizna', desc: '14% szansy na zatrucie celu na 3 tury za łącznie 75% średniego ataku.' },
+    { name: 'Łucznik', icon: '🏹', passive: 'Unik', desc: '16% szansy na uniknięcie ciosu przeciwnika.' },
+    { name: 'Paladyn', icon: '✨', passive: 'Święta regeneracja', desc: '16% szansy po ataku na odzyskanie 12% własnego ataku jako życia.' },
+    { name: 'Nekromanta', icon: '💀', passive: 'Wysysanie życia', desc: 'Leczy się za 8% zadanych obrażeń.' },
+    { name: 'Strażnik', icon: '🧱', passive: 'Żelazna skóra', desc: 'Redukuje 20% obrażeń i zyskuje +50 HP bazowego.' }
+  ];
+
+  const locations = [
+    // 🕳️ DUNGEON
+    { id: 'forest', name: 'Las początkujących', icon: '🌲', desc: 'Słabe potwory', difficulty: '1-3', world: 'dungeon' },
+    { id: 'desert', name: 'Pustynia cieni', icon: '🏜️', desc: 'Szybcy przeciwnicy', difficulty: '3-5', world: 'dungeon' },
+    { id: 'mountains', name: 'Góry orków', icon: '🪨', desc: 'Silni przeciwnicy', difficulty: '5-7', world: 'dungeon' },
+    { id: 'ice', name: 'Lodowa kraina', icon: '🧊', desc: 'Elity', difficulty: '7-9', world: 'dungeon' },
+    { id: 'fire', name: 'Kraina ognia', icon: '🔥', desc: 'Bossy', difficulty: '9-12', world: 'dungeon' },
+    { id: 'darkforest', name: 'Mroczny las', icon: '🌑', desc: 'Ukryte zagrożenia', difficulty: '4-6', world: 'dungeon' },
+    { id: 'ruins', name: 'Zapomniane ruiny', icon: '⛰️', desc: 'Stare potwory', difficulty: '6-8', world: 'dungeon' },
+    { id: 'coast', name: 'Wybrzeże duchów', icon: '🌊', desc: 'Magiczne istoty', difficulty: '6-9', world: 'dungeon' },
+    { id: 'abyss', name: 'Otchłań', icon: '🕳️', desc: 'Bardzo trudni przeciwnicy', difficulty: '10-14', world: 'dungeon' },
+    { id: 'temple', name: 'Starożytna świątynia', icon: '🏛️', desc: 'Rzadkie łupy', difficulty: '8-11', world: 'dungeon' },
+
+    // 🌍 ŚRÓDZIEMIE
+    { id: 'shire', name: 'Shire', icon: '🌿', desc: 'Spokojna kraina hobbitów', difficulty: '10-12', world: 'srodziemie' },
+    { id: 'bree', name: 'Bree', icon: '🏘️', desc: 'Karczmy i podejrzani podróżnicy', difficulty: '11-13', world: 'srodziemie' },
+    { id: 'weathertop', name: 'Wichrowe Wzgórze', icon: '⛰️', desc: 'Miejsce starć z Nazgûlami', difficulty: '12-14', world: 'srodziemie' },
+    { id: 'rivendell', name: 'Rivendell', icon: '🌊', desc: 'Ukryta dolina elfów', difficulty: '13-15', world: 'srodziemie' },
+    { id: 'moria', name: 'Kopalnie Morii', icon: '⛏️', desc: 'Ciemne tunele pełne orków', difficulty: '14-16', world: 'srodziemie' },
+    { id: 'lorien', name: 'Lothlórien', icon: '🌸', desc: 'Magiczny las Galadrieli', difficulty: '15-17', world: 'srodziemie' },
+    { id: 'rohan', name: 'Rohan', icon: '🐎', desc: 'Równiny jeźdźców Rohanu', difficulty: '16-18', world: 'srodziemie' },
+    { id: 'helmsdeep', name: 'Helmowy Jar', icon: '🛡️', desc: 'Twierdza oblężona przez orków', difficulty: '17-19', world: 'srodziemie' },
+    { id: 'fangorn', name: 'Las Fangorn', icon: '🌳', desc: 'Kraina entów', difficulty: '18-20', world: 'srodziemie' },
+    { id: 'gondor', name: 'Gondor', icon: '🏰', desc: 'Potężne królestwo ludzi', difficulty: '19-21', world: 'srodziemie' },
+    { id: 'osgiliath', name: 'Osgiliath', icon: '🏚️', desc: 'Zrujnowane miasto na rzece', difficulty: '20-22', world: 'srodziemie' },
+    { id: 'minastirith', name: 'Minas Tirith', icon: '🏯', desc: 'Biała twierdza Gondoru', difficulty: '21-23', world: 'srodziemie' },
+    { id: 'cirithungol', name: 'Cirith Ungol', icon: '🕷️', desc: 'Przejście strzeżone przez potwory', difficulty: '22-24', world: 'srodziemie' },
+    { id: 'mordor', name: 'Mordor', icon: '🌋', desc: 'Kraina cienia i ognia', difficulty: '23-26', world: 'srodziemie' },
+    { id: 'mountdoom', name: 'Góra Przeznaczenia', icon: '🔥', desc: 'Serce Mordoru', difficulty: '25-30', world: 'srodziemie' }
+  ];
+
+  const monsters = [
+    { name: 'Goblin zwiadowca', icon: '👺', hp: 32, atk: 8, def: 2, speed: 6, exp: 14, gold: 8, location: 'forest', drops: [
+      { name: 'Sztylet zwiadowcy', slot: 'weapon', atk: 3, def: 0, speed: 1, value: 14 },
+      { name: 'Pas zwiadowcy', slot: 'belt', atk: 0, def: 1, speed: 1, value: 10 }
+    ]},
+    { name: 'Wilk', icon: '🐺', hp: 38, atk: 9, def: 2, speed: 7, exp: 16, gold: 10, location: 'forest', drops: [
+      { name: 'Futro wilka', slot: 'armor', atk: 0, def: 3, speed: 1, value: 16 }
+    ]},
+    { name: 'Bandzior', icon: '🗡️', hp: 44, atk: 11, def: 3, speed: 5, exp: 18, gold: 12, location: 'darkforest', drops: [
+      { name: 'Żelazny miecz', slot: 'weapon', atk: 5, def: 0, speed: 0, value: 20 },
+      { name: 'Pas bandyty', slot: 'belt', atk: 1, def: 1, speed: 0, value: 14 }
+    ]},
+    { name: 'Pustynny łupieżca', icon: '🏜️', hp: 52, atk: 13, def: 4, speed: 5, exp: 22, gold: 15, location: 'desert', drops: [
+      { name: 'Topór', slot: 'weapon', atk: 6, def: 0, speed: 0, value: 22 }
+    ]},
+    { name: 'Ork', icon: '👹', hp: 64, atk: 15, def: 6, speed: 4, exp: 28, gold: 18, location: 'mountains', drops: [
+      { name: 'Orczy topór', slot: 'weapon', atk: 8, def: 0, speed: -1, value: 28 },
+      { name: 'Orcza zbroja', slot: 'armor', atk: 0, def: 6, speed: -1, value: 26 }
+    ]},
+    { name: 'Strażnik ruin', icon: '🪦', hp: 70, atk: 16, def: 7, speed: 4, exp: 30, gold: 20, location: 'ruins', drops: [
+      { name: 'Relikt', slot: 'artifact', atk: 3, def: 2, speed: 0, value: 28 }
+    ]},
+    { name: 'Upiorny korsarz', icon: '☠️', hp: 76, atk: 18, def: 7, speed: 5, exp: 34, gold: 24, location: 'coast', drops: [
+      { name: 'Esencja ducha', slot: 'artifact', atk: 2, def: 2, speed: 2, value: 30 }
+    ]},
+    { name: 'Lodowy troll', icon: '🧊', hp: 95, atk: 21, def: 9, speed: 3, exp: 42, gold: 30, location: 'ice', drops: [
+      { name: 'Futro lodowe', slot: 'armor', atk: 0, def: 8, speed: 0, value: 36 },
+      { name: 'Kostur lodu', slot: 'weapon', atk: 10, def: 0, speed: 1, value: 38 }
+    ]},
+    { name: 'Kapłan świątyni', icon: '🛕', hp: 102, atk: 23, def: 10, speed: 4, exp: 48, gold: 34, location: 'temple', drops: [
+      { name: 'Totem', slot: 'artifact', atk: 4, def: 4, speed: 0, value: 40 }
+    ]},
+    { name: 'Imp ognia', icon: '🔥', hp: 108, atk: 25, def: 9, speed: 6, exp: 52, gold: 38, location: 'fire', drops: [
+      { name: 'Kostur ognia', slot: 'weapon', atk: 12, def: 0, speed: 1, value: 44 },
+      { name: 'Pancerz ognia', slot: 'armor', atk: 1, def: 10, speed: -1, value: 42 }
+    ]},
+    { name: 'Demon otchłani', icon: '😈', hp: 145, atk: 31, def: 12, speed: 5, exp: 70, gold: 55, location: 'abyss', drops: [
+      { name: 'Czarna esencja', slot: 'artifact', atk: 6, def: 4, speed: 1, value: 58 },
+      { name: 'Serce demona', slot: 'belt', atk: 3, def: 3, speed: 0, value: 54 }
+    ]}
+  ];
+
+  const accessoryDropPools = {
+    forest: [
+      { name: 'Skórzany kaptur', slot: 'helm', def: 1, speed: 1, value: 10 },
+      { name: 'Buty tropiciela', slot: 'boots', speed: 1, value: 10 },
+      { name: 'Amulet iskry', slot: 'amulet', atk: 1, value: 12 },
+      { name: 'Miedziany pierścień', slot: 'ring', def: 1, value: 12 }
+    ],
+    darkforest: [
+      { name: 'Kaptur cienia', slot: 'helm', def: 2, speed: 1, value: 16 },
+      { name: 'Buty cienia', slot: 'boots', speed: 2, value: 16 },
+      { name: 'Amulet nocy', slot: 'amulet', atk: 2, value: 18 },
+      { name: 'Pierścień mroku', slot: 'ring', def: 2, value: 18 }
+    ],
+    desert: [
+      { name: 'Turban nomada', slot: 'helm', def: 2, speed: 1, value: 16 },
+      { name: 'Piaskowe sandały', slot: 'boots', speed: 2, value: 16 },
+      { name: 'Amulet słońca', slot: 'amulet', atk: 2, value: 18 },
+      { name: 'Pierścień wydmy', slot: 'ring', def: 2, value: 18 }
+    ],
+    mountains: [
+      { name: 'Orczy hełm', slot: 'helm', def: 3, value: 22 },
+      { name: 'Buty wspinacza', slot: 'boots', def: 1, speed: 1, value: 20 },
+      { name: 'Amulet skały', slot: 'amulet', atk: 2, def: 1, value: 22 },
+      { name: 'Pierścień kamienia', slot: 'ring', def: 3, value: 22 }
+    ],
+    ruins: [
+      { name: 'Hełm strażnika ruin', slot: 'helm', def: 3, value: 24 },
+      { name: 'Buty reliktowe', slot: 'boots', speed: 1, def: 1, value: 24 },
+      { name: 'Amulet ruin', slot: 'amulet', atk: 2, value: 24 },
+      { name: 'Pierścień ruin', slot: 'ring', def: 2, atk: 1, value: 24 }
+    ],
+    coast: [
+      { name: 'Kapelusz korsarza', slot: 'helm', def: 2, speed: 1, value: 24 },
+      { name: 'Buty żeglarza', slot: 'boots', speed: 2, value: 24 },
+      { name: 'Amulet przypływu', slot: 'amulet', atk: 2, speed: 1, value: 26 },
+      { name: 'Pierścień fal', slot: 'ring', def: 2, speed: 1, value: 26 }
+    ],
+    ice: [
+      { name: 'Hełm mrozu', slot: 'helm', def: 4, value: 30 },
+      { name: 'Buty śniegu', slot: 'boots', def: 2, speed: 1, value: 28 },
+      { name: 'Amulet lodu', slot: 'amulet', atk: 3, value: 30 },
+      { name: 'Pierścień zimy', slot: 'ring', def: 3, value: 30 }
+    ],
+    fire: [
+      { name: 'Hełm żaru', slot: 'helm', def: 4, atk: 1, value: 34 },
+      { name: 'Buty popiołu', slot: 'boots', speed: 2, value: 32 },
+      { name: 'Amulet płomienia', slot: 'amulet', atk: 4, value: 34 },
+      { name: 'Pierścień popiołu', slot: 'ring', atk: 2, def: 2, value: 34 }
+    ],
+    temple: [
+      { name: 'Hełm świątynny', slot: 'helm', def: 5, value: 36 },
+      { name: 'Buty kapłana', slot: 'boots', speed: 2, def: 1, value: 34 },
+      { name: 'Amulet reliktu', slot: 'amulet', atk: 4, value: 36 },
+      { name: 'Pierścień kapłana', slot: 'ring', def: 4, value: 36 }
+    ],
+    abyss: [
+      { name: 'Hełm otchłani', slot: 'helm', def: 6, value: 42 },
+      { name: 'Buty otchłani', slot: 'boots', speed: 2, def: 2, value: 40 },
+      { name: 'Amulet otchłani', slot: 'amulet', atk: 5, value: 42 },
+      { name: 'Pierścień otchłani', slot: 'ring', atk: 2, def: 4, value: 42 }
+    ]
+  };
+
+  function enrichMonsterDrops() {
+    monsters.forEach((monster, index) => {
+      const pool = accessoryDropPools[monster.location];
+      if (!pool) return;
+      const item = JSON.parse(JSON.stringify(pool[index % pool.length]));
+      if (!monster.drops) monster.drops = [];
+      if (!monster.drops.some(drop => drop.name === item.name)) {
+        monster.drops.push(item);
+      }
+    });
+  }
+
+  enrichMonsterDrops();
+
+  const monsterImages = {
+    'Goblin zwiadowca': 'https://i.imgur.com/8bKQp6T.png',
+    'Wilk': 'https://i.imgur.com/6dKp7Xf.png',
+    'Bandzior': 'https://i.imgur.com/3kL9QpR.png',
+    'Ork': 'https://i.imgur.com/0pZ8X9k.png',
+    'Troll': 'https://i.imgur.com/k9Qp2Xs.png',
+    'Yeti': 'https://i.imgur.com/7Lp9QxM.png',
+    'Demon': 'https://i.imgur.com/9Qp7sK2.png',
+    'Lodowy smok': 'https://i.imgur.com/4Xp9sK1.png',
+    'Imp': 'https://i.imgur.com/2Xp7sQ9.png'
+  };
+
+  let loggedUser = null;
+  let selectedMonster = null;
+  let selectedLocation = null;
+  let fightInProgress = false;
+  let seaVoyageInProgress = false;
+  let seaRouteState = null;
+  let outputHistory = ['Witaj w Wurpeg. Zaloguj się albo załóż konto.'];
+
+  // 👑 BOSS PRZEJŚCIA
+  const worldBoss = {
+    name: "Bal'rog",
+    icon: '🔥',
+    hp: 800,
+    atk: 60,
+    def: 30,
+    speed: 6,
+    exp: 300,
+    gold: 200
+  };
+
+  const astralBoss = {
+    name: 'Władca Astralu',
+    icon: '🌌',
+    hp: 1400,
+    atk: 95,
+    def: 45,
+    speed: 9,
+    exp: 650,
+    gold: 450
+  };
+
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  function getClassColor(name) {
+    return classColors[name] || '#ffffff';
+  }
+
+  function getClassData(name) {
+    return classesData.find(c => c.name === name) || classesData[0];
+  }
+
+  function setOutput(text) {
+    const el = document.getElementById('output');
+    const finalText = typeof text === 'string' ? text : JSON.stringify(text, null, 2);
+    outputHistory.push(finalText);
+    if (outputHistory.length > 80) outputHistory = outputHistory.slice(-80);
+    if (el) {
+      el.innerText = outputHistory.join("\n\n──────────\n\n");
+      el.scrollTop = el.scrollHeight;
+    }
+  }
+
+  function showScreen(name) {
+    document.body.classList.remove('sea-mode');
+    if (name === 'sea') document.body.classList.add('sea-mode');
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const screen = document.getElementById('screen-' + name);
+    if (screen) screen.classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById('nav-' + name);
+    if (btn) btn.classList.add('active');
+    hideFightPanel();
+  }
+
+  function toggleNavGroup(name) {
+    const target = document.getElementById(`submenu-${name}`);
+    if (!target) return;
+    document.querySelectorAll('.nav-submenu').forEach(el => {
+      if (el.id === `submenu-${name}`) el.classList.toggle('open');
+      else el.classList.remove('open');
+    });
+  }
+
+  function openTownCard(cardId) {
+    showScreen('town');
+    document.querySelectorAll('.collapsed-card').forEach(card => {
+      if (card.id === cardId) card.classList.add('open');
+      else card.classList.remove('open');
+    });
+  }
+
+  function openBagAndHighlight() {
+    showScreen('character');
+    document.getElementById('inventoryGrid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function scrollToBagFromTown() {
+    openBagAndHighlight();
+  }
+
+  function toggleTownCard(cardId) {
+    document.querySelectorAll('.collapsed-card').forEach(card => {
+      if (card.id === cardId) card.classList.toggle('open');
+      else card.classList.remove('open');
+    });
+  }
+
+  function defaultPlayer(username) {
+    return {
+      username,
+      password: '',
+      email: '',
+      level: 1,
+      exp: 0,
+      expToNext: 50,
+      hp: 100,
+      maxHp: 100,
+      atk: 10,
+      def: 5,
+      speed: 5,
+      gold: 50,
+      charClass: '',
+      skillPoints: 0,
+      classPath: '',
+      world: 'dungeon',
+      defeatedBosses: [],
+      inventory: [],
+      equipment: { weapon: null, armor: null, artifact: null, belt: null, helm: null, boots: null, amulet: null, ring: null },
+      quests: [],
+      expeditions: 0
+    };
+  }
+
+  function ensurePlayerShape(user, username) {
+    const base = defaultPlayer(username || user.username || 'Bohater');
+    return {
+      ...base,
+      ...user,
+      inventory: Array.isArray(user.inventory) ? user.inventory : [],
+      equipment: {
+        weapon: user.equipment?.weapon || null,
+        armor: user.equipment?.armor || null,
+        artifact: user.equipment?.artifact || null,
+        belt: user.equipment?.belt || null,
+        helm: user.equipment?.helm || null,
+        boots: user.equipment?.boots || null,
+        amulet: user.equipment?.amulet || null,
+        ring: user.equipment?.ring || null,
+      },
+      quests: Array.isArray(user.quests) ? user.quests : [],
+      expeditions: Number(user.expeditions || 0),
+      charClass: user.charClass || '',
+      skillPoints: Number(user.skillPoints || 0),
+      classPath: user.classPath || '',
+      world: user.world || 'dungeon',
+      defeatedBosses: Array.isArray(user.defeatedBosses) ? user.defeatedBosses : []
+    };
+  }
+
+  async function saveProgress() {
+    if (!loggedUser) return true;
+    try {
+      const res = await fetch('http://localhost:3000/save-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: loggedUser.username, user: loggedUser })
+      });
+      const data = await res.json();
+      return !!data.ok;
+    } catch (e) {
+      setOutput('Nie udało się zapisać progresu: ' + e.message);
+      return false;
+    }
+  }
+
+  function getClassPaths(className) {
+    const map = {
+      'Rycerz': [
+        { id: 'guardian', name: 'Obrońca', desc: '+4 obrony, +20 HP', atk: 0, def: 4, speed: 0, hp: 20 },
+        { id: 'duelist', name: 'Pojedynkowicz', desc: '+3 ataku, +2 szybkości', atk: 3, def: 0, speed: 2, hp: 0 },
+        { id: 'captain', name: 'Dowódca', desc: '+2 ataku, +2 obrony, +10 HP', atk: 2, def: 2, speed: 0, hp: 10 }
+      ],
+      'Simon': [
+        { id: 'berserk', name: 'Berserk', desc: '+5 ataku, -1 obrony', atk: 5, def: -1, speed: 0, hp: 0 },
+        { id: 'reaver', name: 'Łupieżca', desc: '+3 ataku, +2 szybkości', atk: 3, def: 0, speed: 2, hp: 0 },
+        { id: 'juggernaut', name: 'Moloch', desc: '+2 ataku, +2 obrony, +20 HP', atk: 2, def: 2, speed: -1, hp: 20 }
+      ],
+      'Mag': [
+        { id: 'frost', name: 'Lód', desc: '+2 obrony, +2 szybkości', atk: 1, def: 2, speed: 2, hp: 0 },
+        { id: 'fire', name: 'Ogień', desc: '+4 ataku', atk: 4, def: 0, speed: 0, hp: 0 },
+        { id: 'arcane', name: 'Arkana', desc: '+2 ataku, +2 obrony, +10 HP', atk: 2, def: 2, speed: 0, hp: 10 }
+      ],
+      'Camilla': [
+        { id: 'venom', name: 'Jad', desc: '+3 ataku, +1 szybkości', atk: 3, def: 0, speed: 1, hp: 0 },
+        { id: 'shade', name: 'Cień', desc: '+3 szybkości, +1 ataku', atk: 1, def: 0, speed: 3, hp: 0 },
+        { id: 'alchemist', name: 'Alchemik', desc: '+2 obrony, +15 HP', atk: 0, def: 2, speed: 0, hp: 15 }
+      ],
+      'Łucznik': [
+        { id: 'sniper', name: 'Snajper', desc: '+4 ataku', atk: 4, def: 0, speed: 0, hp: 0 },
+        { id: 'ranger', name: 'Strażnik', desc: '+2 ataku, +2 szybkości', atk: 2, def: 0, speed: 2, hp: 0 },
+        { id: 'scout', name: 'Zwiadowca', desc: '+3 szybkości, +10 HP', atk: 0, def: 0, speed: 3, hp: 10 }
+      ],
+      'Paladyn': [
+        { id: 'templar', name: 'Templariusz', desc: '+3 obrony, +15 HP', atk: 0, def: 3, speed: 0, hp: 15 },
+        { id: 'judicator', name: 'Sędzia', desc: '+3 ataku, +1 obrony', atk: 3, def: 1, speed: 0, hp: 0 },
+        { id: 'saint', name: 'Święty', desc: '+2 obrony, +2 szybkości', atk: 0, def: 2, speed: 2, hp: 0 }
+      ],
+      'Nekromanta': [
+        { id: 'reaper', name: 'Żniwiarz', desc: '+4 ataku', atk: 4, def: 0, speed: 0, hp: 0 },
+        { id: 'lich', name: 'Lisz', desc: '+2 ataku, +2 obrony', atk: 2, def: 2, speed: 0, hp: 0 },
+        { id: 'bone', name: 'Kościany', desc: '+3 obrony, +15 HP', atk: 0, def: 3, speed: 0, hp: 15 }
+      ],
+      'Strażnik': [
+        { id: 'fortress', name: 'Forteca', desc: '+5 obrony, +30 HP', atk: 0, def: 5, speed: -1, hp: 30 },
+        { id: 'warden', name: 'Strażnik pola', desc: '+2 ataku, +3 obrony, +15 HP', atk: 2, def: 3, speed: 0, hp: 15 },
+        { id: 'bulwark', name: 'Mur tarcz', desc: '+4 obrony, +1 szybkości, +20 HP', atk: 0, def: 4, speed: 1, hp: 20 }
+      ]
+    };
+    return map[className] || [];
+  }
+
+  function getSelectedClassPath(player) {
+    return getClassPaths(player.charClass).find(path => path.id === player.classPath) || null;
+  }
+
+  function calcFinalStats(player) {
+    const eq = player.equipment || {};
+    const items = [eq.weapon, eq.armor, eq.artifact, eq.belt, eq.helm, eq.boots, eq.amulet, eq.ring].filter(Boolean);
+    const bonus = items.reduce((acc, item) => {
+      acc.atk += item.atk || 0;
+      acc.def += item.def || 0;
+      acc.speed += item.speed || 0;
+      return acc;
+    }, { atk: 0, def: 0, speed: 0 });
+
+    const path = getSelectedClassPath(player);
+    const pathAtk = path?.atk || 0;
+    const pathDef = path?.def || 0;
+    const pathSpeed = path?.speed || 0;
+
+    return {
+      atk: (player.atk || 0) + bonus.atk + pathAtk,
+      def: (player.def || 0) + bonus.def + pathDef,
+      speed: (player.speed || 0) + bonus.speed + pathSpeed
+    };
+  }
+
+  function getItemLevel(item) {
+    if (!item.level) item.level = 1;
+    return item.level;
+  }
+
+  function scaleItem(item) {
+    const lvl = getItemLevel(item);
+    const scale = 1 + (lvl - 1) * 0.5;
+    return {
+      atk: Math.floor((item.atk || 0) * scale),
+      def: Math.floor((item.def || 0) * scale),
+      speed: Math.floor((item.speed || 0) * scale)
+    };
+  }
+
+  function itemIcon(item) {
+    if (!item) return 'https://i.imgur.com/7QZ7Q0v.png';
+    const icons = {
+      'Żelazny miecz': 'https://i.imgur.com/1Xq9Z9K.png',
+      'Sztylet zwiadowcy': 'https://i.imgur.com/0mKXcgC.png',
+      'Topór': 'https://i.imgur.com/8Q1Z4tS.png',
+      'Topór berserkera': 'https://i.imgur.com/8Q1Z4tS.png',
+      'Kostur lodu': 'https://i.imgur.com/W2k9sYV.png',
+      'Kostur ognia': 'https://i.imgur.com/9n6Qp7H.png',
+      'Smoczy kieł': 'https://i.imgur.com/N0b7QpL.png',
+      'Szata maga': 'https://i.imgur.com/3Xh2s9B.png',
+      'Futro wilka': 'https://i.imgur.com/Yz8Qk0L.png',
+      'Futro lodowe': 'https://i.imgur.com/Yz8Qk0L.png',
+      'Futro yeti': 'https://i.imgur.com/Yz8Qk0L.png',
+      'Pancerz ognia': 'https://i.imgur.com/7TgX9dP.png',
+      'Esencja ducha': 'https://i.imgur.com/zP7v1sB.png',
+      'Totem': 'https://i.imgur.com/4kZp7mN.png',
+      'Relikt': 'https://i.imgur.com/hQ2s9Lp.png',
+      'Serce demona': 'https://i.imgur.com/d8Qp7Tn.png',
+      'Czarna esencja': 'https://i.imgur.com/zP7v1sB.png',
+      'Mikstura leczenia': 'https://i.imgur.com/VuKp6sP.png',
+      'Pas bandyty': 'https://i.imgur.com/xQp7sL1.png',
+      'Pas zwiadowcy': 'https://i.imgur.com/xQp7sL1.png'
+    };
+    return icons[item.name] || 'https://i.imgur.com/3c8Qf7C.png';
+  }
+
+  function itemFallbackEmoji(item) {
+    if (!item) return '📦';
+    const bySlot = { weapon: '⚔️', armor: '🛡️', artifact: '🔮', belt: '🧰', helm: '⛑️', boots: '🥾', amulet: '📿', ring: '💍' };
+    return bySlot[item.slot] || '📦';
+  }
+
+  function classAvatarHtml(className) {
+    const classAvatars = {
+      'Rycerz': 'https://i.imgur.com/2yaf2wb.png',
+      'Simon': 'https://i.imgur.com/0Z8FQ6P.png',
+      'Mag': 'https://i.imgur.com/QZ6X9qT.png',
+      'Camilla': 'https://i.imgur.com/V4b7l5K.png',
+      'Łucznik': 'https://i.imgur.com/3c8Qf7C.png',
+      'Paladyn': 'https://i.imgur.com/6p3kZ9O.png',
+      'Nekromanta': 'https://i.imgur.com/dt3w8gH.png',
+      'Strażnik': 'https://i.imgur.com/7QZ7Q0v.png'
+    };
+    const src = classAvatars[className] || 'https://i.imgur.com/7QZ7Q0v.png';
+    return `<img class="hero-img" src="${src}" onerror="this.outerHTML='🧙‍♂️'"/>`;
+  }
+
+  function updateHeroVisual() {
+    const el = document.getElementById('heroArt');
+    const prev = document.getElementById('heroPreview');
+    if (!el || !prev) return;
+
+    if (!loggedUser) {
+      const html = classAvatarHtml('');
+      el.innerHTML = html;
+      prev.innerHTML = html;
+      return;
+    }
+
+    const html = classAvatarHtml(loggedUser.charClass);
+    el.innerHTML = html;
+    prev.innerHTML = html;
+  }
+
+  function updateTopStatus() {
+    const bar = document.getElementById('topStatusBar');
+    if (!bar) return;
+    if (!loggedUser) {
+      bar.classList.add('hidden');
+      return;
+    }
+    bar.classList.remove('hidden');
+    document.getElementById('topPlayerName').innerText = loggedUser.username;
+    document.getElementById('topPlayerLevel').innerText = loggedUser.level;
+    document.getElementById('topPlayerGold').innerText = loggedUser.gold;
+    document.getElementById('topPlayerHp').innerText = `${loggedUser.hp}/${loggedUser.maxHp}`;
+  }
+
+  function updateAuthPanel() {
+    const auth = document.getElementById('authPanel');
+    if (!auth) return;
+    if (loggedUser) auth.classList.add('hidden');
+    else auth.classList.remove('hidden');
+  }
+
+  function shouldShowClassPicker() {
+    return !!loggedUser && (!loggedUser.charClass || loggedUser.charClass.trim() === '');
+  }
+
+  function renderClassPicker() {
+    const panel = document.getElementById('classChoicePanel');
+    const grid = document.getElementById('classChoiceGrid');
+    if (!panel || !grid) return;
+    if (!shouldShowClassPicker()) {
+      panel.classList.add('hidden');
+      return;
+    }
+    panel.classList.remove('hidden');
+    grid.innerHTML = classesData.map(c => `
+      <button class="class-pick-btn" onclick="chooseClass('${c.name.replace(/'/g, "\'")}')">
+        <div style="font-size:26px; margin-bottom:6px; color:${getClassColor(c.name)};">${c.icon} ${c.name}</div>
+        <div class="small"><strong>${c.passive}</strong></div>
+        <div class="small">${c.desc}</div>
+      </button>
+    `).join('');
+  }
+
+  async function chooseClass(className) {
+    if (!loggedUser) return;
+    loggedUser.charClass = className;
+    renderPlayer();
+    await saveProgress();
+    setOutput(`Wybrano klasę: ${className}`);
+  }
+
+  function getSeaIslandConfig(islandId) {
+    const map = {
+      katos: { id: 'katos', name: 'Katos', steps: 10, danger: 1, reward: 1.0, routeRisk: 0.18 },
+      leoclaw: { id: 'leoclaw', name: 'Le Oclaw', steps: 20, danger: 2, reward: 1.45, routeRisk: 0.28 },
+      puerotrico: { id: 'puerotrico', name: 'Puero Trico', steps: 30, danger: 3, reward: 2.15, routeRisk: 0.42 }
+    };
+    return map[islandId] || null;
+  }
+
+  function scaleSeaValue(base, islandCfg, type = 'gold') {
+    const playerLevel = Math.max(1, Number(loggedUser?.level || 1));
+    const islandFactor = islandCfg.reward;
+    const levelFactor = 0.9 + playerLevel * 0.11;
+    const riskFactor = 1 + islandCfg.danger * 0.22;
+    const value = base * islandFactor * levelFactor * riskFactor;
+    if (type === 'exp') return Math.max(8, Math.round(value));
+    return Math.max(6, Math.round(value));
+  }
+
+  function createSeaMonster(islandCfg, stepIndex) {
+    const seaPool = monsters.filter(m => ['coast', 'abyss', 'ice', 'fire', 'temple'].includes(m.location));
+    const baseMonster = JSON.parse(JSON.stringify(seaPool[Math.floor(Math.random() * seaPool.length)] || monsters[Math.floor(Math.random() * monsters.length)]));
+    const playerLevel = Math.max(1, Number(loggedUser?.level || 1));
+    const progressFactor = 1 + (stepIndex / islandCfg.steps) * 0.35;
+    const islandFactor = 1 + islandCfg.danger * 0.28;
+    const levelFactor = 0.8 + playerLevel * 0.08;
+    const total = progressFactor * islandFactor * levelFactor;
+
+    baseMonster.name = `${baseMonster.name} [morski]`;
+    baseMonster.hp = Math.max(40, Math.round(baseMonster.hp * total));
+    baseMonster.atk = Math.max(8, Math.round(baseMonster.atk * (0.95 + islandCfg.danger * 0.18 + playerLevel * 0.035)));
+    baseMonster.def = Math.max(3, Math.round(baseMonster.def * (0.95 + islandCfg.danger * 0.14 + playerLevel * 0.02)));
+    baseMonster.speed = Math.max(3, Math.round(baseMonster.speed * (1 + islandCfg.danger * 0.08)));
+    baseMonster.exp = scaleSeaValue(Math.max(12, Math.floor(baseMonster.exp * 0.32)), islandCfg, 'exp');
+    baseMonster.gold = scaleSeaValue(Math.max(8, Math.floor(baseMonster.gold * 0.35)), islandCfg, 'gold');
+    return baseMonster;
+  }
+
+  function renderSeaRoute() {
+    const wrap = document.getElementById('seaRouteWrap');
+    const grid = document.getElementById('seaRouteGrid');
+    const title = document.getElementById('seaRouteTitle');
+    const meta = document.getElementById('seaRouteMeta');
+    const summary = document.getElementById('seaRouteSummary');
+    if (!wrap || !grid || !title || !meta || !summary) return;
+
+    if (!seaRouteState) {
+      wrap.style.display = 'none';
+      return;
+    }
+
+    wrap.style.display = 'grid';
+    title.innerText = `Trasa na ${seaRouteState.name}`;
+    meta.innerText = `Etap ${seaRouteState.progress}/${seaRouteState.steps} • Im dalej płyniesz, tym bardziej boli.`;
+    summary.innerHTML = `Poziom wyspy: <strong>${seaRouteState.danger}</strong><br>Szansa złych eventów: <strong>${Math.round(seaRouteState.routeRisk * 100)}%</strong><br>Nagrody: <strong>x${seaRouteState.reward.toFixed(2)}</strong>`;
+
+    const tiles = [];
+    for (let i = 1; i <= seaRouteState.steps; i++) {
+      const cls = i < seaRouteState.progress ? 'done' : i === seaRouteState.progress ? 'current' : 'upcoming';
+      const extra = i === seaRouteState.steps ? ' boss' : '';
+      tiles.push(`<div class="sea-tile ${cls}${extra}">${i === seaRouteState.steps ? '🏴' : i}</div>`);
+    }
+    grid.innerHTML = tiles.join('');
+  }
+
+  async function startSeaAdventure(islandId) {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+
+    const islandCfg = getSeaIslandConfig(islandId);
+    if (!islandCfg) return setOutput('Nie znaleziono wyspy.');
+
+    if (seaRouteState && seaRouteState.id !== islandId && seaRouteState.progress > 0 && seaRouteState.progress < seaRouteState.steps) {
+      return setOutput(`Masz aktywną trasę na ${seaRouteState.name}. Dokończ ją, zanim zmienisz wyspę.`);
+    }
+
+    if (!seaRouteState || seaRouteState.id !== islandId || seaRouteState.progress >= seaRouteState.steps) {
+      seaRouteState = { ...islandCfg, progress: 0 };
+      seaVoyageInProgress = true;
+      renderSeaRoute();
+      setOutput(`🌊 Rozpoczynasz rejs na ${islandCfg.name}. Każde kolejne kliknięcie to następny etap podróży.`);
+      return;
+    }
+
+    const step = seaRouteState.progress + 1;
+    seaRouteState.progress = step;
+    seaVoyageInProgress = step < seaRouteState.steps;
+    renderSeaRoute();
+
+    let voyageLog = `🌊 Rejs na ${seaRouteState.name} • etap ${step}/${seaRouteState.steps}.
+`;
+    const roll = Math.random();
+    const isLastTile = step === seaRouteState.steps;
+
+    if (isLastTile || roll < seaRouteState.routeRisk) {
+      const seaMonster = createSeaMonster(seaRouteState, step);
+      voyageLog += `⚔️ Z fal wyłania się ${seaMonster.name}. Morze chce Cię dziś utopić.
+`;
+      setOutput(voyageLog);
+      await runAnimatedFight(seaMonster, `Morska walka • etap ${step}/${seaRouteState.steps} • ${seaMonster.name}.`);
+      if (loggedUser.hp <= 0) {
+        setOutput(voyageLog + `
+☠️ Rejs kończy się katastrofą. ${seaRouteState.name} pozostaje tylko marzeniem.`);
+        seaVoyageInProgress = false;
+        seaRouteState = null;
+        renderSeaRoute();
+        await saveProgress();
+        return;
+      }
+    } else if (roll < 0.45) {
+      const gold = scaleSeaValue(Math.floor(7 + Math.random() * 8), seaRouteState, 'gold');
+      const exp = scaleSeaValue(Math.floor(6 + Math.random() * 7), seaRouteState, 'exp');
+      loggedUser.gold += gold;
+      gainRewards(exp, 0);
+      voyageLog += `💰 Prąd wyrzuca na pokład sakiewkę i trochę cennych rupieci (+${gold} złota, +${exp} expa).
+`;
+    } else if (roll < 0.68) {
+      const gold = scaleSeaValue(Math.floor(10 + Math.random() * 12), seaRouteState, 'gold');
+      const exp = scaleSeaValue(Math.floor(8 + Math.random() * 9), seaRouteState, 'exp');
+      loggedUser.gold += gold;
+      gainRewards(exp, 0);
+
+      if (Math.random() < (0.18 + seaRouteState.danger * 0.05)) {
+        const seaPool = monsters.filter(m => ['coast', 'abyss', 'ice', 'fire', 'temple'].includes(m.location));
+        const sourceMonster = seaPool[Math.floor(Math.random() * seaPool.length)] || monsters[0];
+        const item = JSON.parse(JSON.stringify(sourceMonster.drops[0]));
+        const bonusLvl = seaRouteState.danger === 3 ? (Math.random() < 0.35 ? 2 : 1) : 0;
+        item.level = Math.min(5, Math.max(1, rollItemLevel() + bonusLvl));
+        loggedUser.inventory.push(item);
+        voyageLog += `📦 Wyławiasz skrzynię. W środku: ${item.name} lvl ${item.level}, +${gold} złota i +${exp} expa.
+`;
+      } else {
+        voyageLog += `📦 Zdobywasz skrzynię z łupem pieniężnym (+${gold} złota, +${exp} expa).
+`;
+      }
+    } else if (roll < 0.82) {
+      const dmg = Math.max(8, Math.round((8 + seaRouteState.danger * 4 + step * 0.5) * (0.7 + loggedUser.level * 0.04)));
+      loggedUser.hp = Math.max(0, loggedUser.hp - dmg);
+      voyageLog += `🌩️ Sztorm rozbija pokład. Obrywasz za ${dmg} HP.
+`;
+      if (loggedUser.hp <= 0) {
+        seaVoyageInProgress = false;
+        seaRouteState = null;
+        renderSeaRoute();
+        await saveProgress();
+        setOutput(voyageLog + `
+☠️ Morze wygrało ten rejs.`);
+        return;
+      }
+    } else if (roll < 0.92) {
+      const loss = Math.min(loggedUser.gold, scaleSeaValue(Math.floor(6 + Math.random() * 7), seaRouteState, 'gold'));
+      loggedUser.gold -= loss;
+      voyageLog += `🏴‍☠️ Morscy bandyci robią Ci przeszukanie kieszeni (-${loss} złota).
+`;
+    } else {
+      const exp = scaleSeaValue(Math.floor(5 + Math.random() * 5), seaRouteState, 'exp');
+      gainRewards(exp, 0);
+      voyageLog += `🌫️ Cisza przed burzą. Nic nie zdobywasz poza doświadczeniem marynarskim (+${exp} expa).
+`;
+    }
+
+    if (step >= seaRouteState.steps) {
+      const finalGold = scaleSeaValue(18 + seaRouteState.steps, seaRouteState, 'gold');
+      const finalExp = scaleSeaValue(14 + seaRouteState.steps, seaRouteState, 'exp');
+      loggedUser.gold += finalGold;
+      gainRewards(finalExp, 0);
+      voyageLog += `
+🏝️ Dopływasz do ${seaRouteState.name}. Samo dotarcie daje Ci +${finalGold} złota i +${finalExp} expa.`;
+      seaVoyageInProgress = false;
+      seaRouteState = null;
+      renderSeaRoute();
+    }
+
+    renderPlayer();
+    await saveProgress();
+    setOutput(voyageLog);
+  }
+
+  function fillSlot(idName, idStats, item) {
+    const nameEl = document.getElementById(idName);
+    const statsEl = document.getElementById(idStats);
+    if (!nameEl || !statsEl) return;
+    nameEl.innerHTML = item ? `<img src="${itemIcon(item)}" style="width:28px;height:28px;object-fit:contain;" onerror="this.outerHTML='${itemFallbackEmoji(item)}'"> <span>${item.name}</span>` : '·';
+    statsEl.innerText = item ? `lvl ${item.level || 1} | atk ${scaleItem(item).atk} | def ${scaleItem(item).def}` : '-';
+  }
+
+  function renderEquipment() {
+    const eq = loggedUser?.equipment || {};
+    fillSlot('slotWeapon', 'slotWeaponStats', eq.weapon);
+    fillSlot('slotArmor', 'slotArmorStats', eq.armor);
+    fillSlot('slotArtifact', 'slotArtifactStats', eq.artifact);
+    fillSlot('slotBelt', 'slotBeltStats', eq.belt);
+    fillSlot('slotHelm', 'slotHelmStats', eq.helm);
+    fillSlot('slotBoots', 'slotBootsStats', eq.boots);
+    fillSlot('slotAmulet', 'slotAmuletStats', eq.amulet);
+    fillSlot('slotRing', 'slotRingStats', eq.ring);
+  }
+
+  function translateSlot(slot) {
+    return ({ weapon: 'broń', armor: 'zbroja', artifact: 'artefakt', belt: 'pas', helm: 'hełm', boots: 'buty', amulet: 'amulet', ring: 'pierścień' })[slot] || slot;
+  }
+
+  function populateMergeOptions() {
+    const select1 = document.getElementById('mergeItem1');
+    const select2 = document.getElementById('mergeItem2');
+    if (!select1 || !select2) return;
+    const items = loggedUser?.inventory || [];
+    const base1 = ['<option value="">Wybierz pierwszy przedmiot</option>'];
+    const base2 = ['<option value="">Wybierz drugi przedmiot</option>'];
+    items.forEach((item, index) => {
+      const label = `${item.name} (lvl ${item.level || 1})`;
+      base1.push(`<option value="${index}">${label}</option>`);
+      base2.push(`<option value="${index}">${label}</option>`);
+    });
+    select1.innerHTML = base1.join('');
+    select2.innerHTML = base2.join('');
+  }
+
+  function renderInventory() {
+    const grid = document.getElementById('inventoryGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    if (!loggedUser || !loggedUser.inventory.length) {
+      grid.innerHTML = '<div class="small">Plecak jest pusty.</div>';
+      document.getElementById('submenu-bag').innerHTML = '<div class="small">Pusty plecak</div>';
+      populateMergeOptions();
+      return;
+    }
+
+    loggedUser.inventory.forEach((item, index) => {
+      const div = document.createElement('div');
+      const isGod = item.name === 'Boska pała';
+      const lvl = item.level || 1;
+      div.className = 'item-card item-lvl-' + lvl + (isGod ? ' legendary' : '');
+
+      div.innerHTML = `
+        <div class="item-head">
+          <div class="item-icon"><img src="${itemIcon(item)}" onerror="this.outerHTML='${itemFallbackEmoji(item)}'"/></div>
+          <div>
+            <div class="item-title" style="${isGod ? 'color:gold; text-shadow:0 0 6px gold;' : ''}">${isGod ? '👑 ' : ''}${item.name}</div>
+            <div class="item-meta">miejsce: ${translateSlot(item.slot)}<br>wartość: ${item.value || 5} złota</div>
+          </div>
+        </div>
+        <div class="item-meta">lvl ${item.level || 1}<br>atak ${scaleItem(item).atk} | obrona ${scaleItem(item).def} | szybkość ${scaleItem(item).speed}</div>
+        <div class="item-actions">
+          <button onclick="equipItem(${index})">Załóż</button>
+          <button class="button-danger" onclick="sellItem(${index})">Sprzedaj</button>
+        </div>
+      `;
+      grid.appendChild(div);
+    });
+
+    document.getElementById('submenu-bag').innerHTML = `<button class="nav-subbtn" onclick="openBagAndHighlight()">🎒 Przejdź do plecaka</button>`;
+    populateMergeOptions();
+  }
+
+  function renderClasses() {
+    const grid = document.getElementById('classesGrid');
+    if (!grid) return;
+    grid.innerHTML = classesData.map(c => {
+      const paths = getClassPaths(c.name);
+      const specsHtml = paths.length
+        ? `<div class="small" style="margin-top:10px;"><strong>Specjalizacje:</strong><br>${paths.map(path => `• ${path.name} — ${path.desc}`).join('<br>')}</div>`
+        : `<div class="small" style="margin-top:10px;"><strong>Specjalizacje:</strong><br>Brak</div>`;
+
+      return `
+      <div class="panel">
+        <div style="font-size:48px; margin-bottom:10px;">${c.icon}</div>
+        <h3 style="color:${getClassColor(c.name)}">${c.name}</h3>
+        <div class="item-title" style="font-size:16px; margin-bottom:8px;">${c.passive}</div>
+        <div class="small">${c.desc}</div>
+        ${specsHtml}
+      </div>
+    `;
+    }).join('');
+  }
+
+  function renderMonsters() {
+    const filtered = selectedLocation ? monsters.filter(monster => monster.location === selectedLocation) : monsters;
+
+    document.getElementById('submenu-monsters').innerHTML = filtered.map(monster => {
+      const approxLvl = Math.max(1, Math.round(monster.exp / 12));
+      return `<button class="nav-subbtn" onclick="selectMonsterByName('${monster.name.replace(/'/g, "\'")}')">${monster.icon} ${monster.name} (lvl ${approxLvl})</button>`;
+    }).join('');
+
+    const center = document.getElementById('monsterCenterList');
+    if (center) {
+      center.innerHTML = filtered.map(monster => {
+        const approxLvl = Math.max(1, Math.round(monster.exp / 12));
+        return `
+          <div class="monster-row">
+            <div>
+              <strong>${monster.icon} ${monster.name}</strong><br>
+              <span class="small">Poziom ${approxLvl} | HP ${monster.hp} | ATK ${monster.atk} | DEF ${monster.def}</span>
+            </div>
+            <button onclick="selectMonsterByName('${monster.name.replace(/'/g, "\'")}')">Wybierz</button>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  function renderLocations() {
+    const currentWorld = loggedUser?.world || 'dungeon';
+    const visibleLocations = locations.filter(location => (location.world || 'dungeon') === currentWorld);
+
+    document.getElementById('submenu-locations').innerHTML = visibleLocations.map(location =>
+      `<button class="nav-subbtn" onclick="selectLocation('${location.id}')">${location.icon} ${location.name} (lvl ${location.difficulty})</button>`
+    ).join('');
+
+    const center = document.getElementById('locationsCenterGrid');
+    if (center) {
+      center.innerHTML = visibleLocations.map(location => `
+        <div class="panel">
+          <div style="font-size:44px; text-align:center;">${location.icon}</div>
+          <h3>${location.name}</h3>
+          <div class="small">${location.desc}</div>
+          <div class="small" style="margin-top:8px;">Sugerowany poziom: ${location.difficulty}</div>
+          <button style="margin-top:12px; width:100%;" onclick="selectLocation('${location.id}')">Wyrusz</button>
+        </div>
+      `).join('') || '<div class="small">Brak odblokowanych lokacji w tym świecie.</div>';
+    }
+  }
+
+  function isWorldUnlocked(worldId) {
+    if (!loggedUser) return worldId === 'dungeon';
+    if (worldId === 'dungeon') return true;
+    if (worldId === 'srodziemie') return loggedUser.defeatedBosses?.includes("Bal'rog");
+    if (worldId === 'astral') return loggedUser.defeatedBosses?.includes('Władca Astralu');
+    return false;
+  }
+
+  function renderWorldsNav() {
+    const submenu = document.getElementById('submenu-worlds');
+    if (!submenu) return;
+    const worlds = [
+      { id: 'dungeon', name: 'Dungeon', icon: '🕳️', boss: 'Startowy świat' },
+      { id: 'srodziemie', name: 'Śródziemie', icon: '🧝‍♂️', boss: "Pokonaj Bal'roga" },
+      { id: 'astral', name: 'Otchłań Astralna', icon: '🌌', boss: 'Pokonaj Władcę Astralu' }
+    ];
+    submenu.innerHTML = worlds.map(world => {
+      const unlocked = isWorldUnlocked(world.id);
+      const bossBtn = world.id !== 'dungeon'
+        ? `<button class="nav-subbtn" onclick="startWorldBossFight('${world.id}')">⚔️ Walka z bossem</button>`
+        : '';
+      return `<button class="nav-subbtn" ${unlocked ? "onclick=\"showScreen('worlds')\"" : ''}>${world.icon} ${world.name} ${unlocked ? '✅' : '🔒'}</button><div class="small" style="margin:4px 0 8px 4px;">${unlocked ? 'Odblokowany' : world.boss}</div>${bossBtn}`;
+    }).join('');
+
+    const srodziemieState = document.getElementById('worldStateSrodziemie');
+    const astralState = document.getElementById('worldStateAstral');
+    if (srodziemieState) srodziemieState.innerText = isWorldUnlocked('srodziemie') ? '✅ Odblokowany' : "🔒 Pokonaj Bal'roga";
+    if (astralState) astralState.innerText = isWorldUnlocked('astral') ? '✅ Odblokowany' : '🔒 Pokonaj Władcę Astralu';
+  }
+
+  function renderDevelopmentPanel() {
+    const pointsEl = document.getElementById('skillPointsValue');
+    const grid = document.getElementById('classPathGrid');
+    const info = document.getElementById('classPathInfo');
+    if (!pointsEl || !grid || !info) return;
+
+    if (!loggedUser) {
+      pointsEl.innerText = '0';
+      grid.innerHTML = '';
+      info.innerText = 'Odblokowuje się od 5 poziomu.';
+      return;
+    }
+
+    pointsEl.innerText = loggedUser.skillPoints || 0;
+
+    if (!loggedUser.charClass) {
+      info.innerText = 'Najpierw wybierz klasę.';
+      grid.innerHTML = '';
+      return;
+    }
+
+    const paths = getClassPaths(loggedUser.charClass);
+    const canChoose = loggedUser.level >= 5;
+
+    if (!paths.length) {
+      info.innerText = 'Ta klasa nie ma jeszcze specjalizacji.';
+      grid.innerHTML = '';
+      return;
+    }
+
+    if (loggedUser.classPath) {
+      info.innerText = 'Masz już wybraną specjalizację.';
+    } else if (!canChoose) {
+      info.innerText = `Specjalizacja odblokuje się na 5 poziomie. Aktualny poziom: ${loggedUser.level}.`;
+    } else {
+      info.innerText = 'Wybierz jedną z 3 ścieżek rozwoju.';
+    }
+
+    grid.innerHTML = paths.map(path => {
+      const isSelected = loggedUser.classPath === path.id;
+      const isDisabled = !!loggedUser.classPath || !canChoose;
+      const buttonLabel = isSelected ? 'Wybrana' : (!canChoose ? `Odblokuj na 5 lvl` : 'Wybierz');
+      return `
+        <div class="path-card ${isSelected ? 'active' : ''}">
+          <div class="item-title">${path.name}</div>
+          <div class="small">${path.desc}</div>
+          <button style="margin-top:10px; width:100%;" onclick="chooseClassPath('${path.id}')" ${isDisabled && !isSelected ? 'disabled' : ''} ${isSelected ? 'disabled' : ''}>${buttonLabel}</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function spendSkillPoint(stat) {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+    if (!loggedUser.skillPoints || loggedUser.skillPoints <= 0) return setOutput('Nie masz punktów rozwoju.');
+
+    loggedUser.skillPoints -= 1;
+    if (stat === 'atk') loggedUser.atk += 1;
+    if (stat === 'def') loggedUser.def += 1;
+    if (stat === 'speed') loggedUser.speed += 1;
+    if (stat === 'hp') {
+      loggedUser.maxHp += 10;
+      loggedUser.hp += 10;
+    }
+
+    renderPlayer();
+    await saveProgress();
+    setOutput('Wydano 1 punkt rozwoju.');
+  }
+
+  async function chooseClassPath(pathId) {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+    if (loggedUser.level < 5) return setOutput('Specjalizacja od 5 poziomu.');
+    if (loggedUser.classPath) return setOutput('Specjalizacja została już wybrana.');
+
+    const path = getClassPaths(loggedUser.charClass).find(p => p.id === pathId);
+    if (!path) return setOutput('Nie znaleziono specjalizacji.');
+
+    loggedUser.classPath = path.id;
+    if (path.hp) {
+      loggedUser.maxHp += path.hp;
+      loggedUser.hp += path.hp;
+    }
+
+    renderPlayer();
+    await saveProgress();
+    setOutput(`Wybrano specjalizację: ${path.name}.`);
+  }
+
+  async function startWorldBossFight(worldId) {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+    if (fightInProgress) return setOutput('Najpierw dokończ aktualną walkę.');
+
+    if (worldId === 'srodziemie') {
+      await runAnimatedFight({ ...worldBoss }, `🔥 Stajesz do walki z Bal'rogiem!`);
+      if (loggedUser && loggedUser.hp > 0 && !loggedUser.defeatedBosses.includes("Bal'rog")) {
+        loggedUser.defeatedBosses.push("Bal'rog");
+        loggedUser.world = 'srodziemie';
+        renderWorldsNav();
+        renderLocations();
+        renderPlayer();
+        await saveProgress();
+        setOutput("🔥 Bal'rog został pokonany! Odblokowano świat: Śródziemie.");
+      }
+      return;
+    }
+
+    if (worldId === 'astral') {
+      if (!loggedUser.defeatedBosses.includes("Bal'rog")) {
+        return setOutput("Najpierw pokonaj Bal'roga.");
+      }
+      await runAnimatedFight({ ...astralBoss }, `🌌 Stajesz do walki z Władcą Astralu!`);
+      if (loggedUser && loggedUser.hp > 0 && !loggedUser.defeatedBosses.includes('Władca Astralu')) {
+        loggedUser.defeatedBosses.push('Władca Astralu');
+        loggedUser.world = 'astral';
+        renderWorldsNav();
+        renderLocations();
+        renderPlayer();
+        await saveProgress();
+        setOutput('🌌 Władca Astralu został pokonany! Otchłań Astralna została odblokowana.');
+      }
+    }
+  }
+
+  function renderPlayer() {
+    const layout = document.querySelector('.character-layout');
+
+    // 🔒 TRYB PRZED LOGOWANIEM
+    if (!loggedUser) {
+      layout?.classList.remove('logged-layout');
+
+      // pokaż tylko login
+      document.querySelectorAll('.auth-only').forEach(el => el.style.display = 'none');
+
+      // schowaj wszystkie zakładki poza klasami
+      document.querySelectorAll('#nav-arena, #nav-monsters, #nav-town, #nav-bag, #nav-locations, #nav-sea, #nav-worlds')
+        .forEach(el => el.style.display = 'none');
+
+      document.getElementById('nav-classes').style.display = 'block';
+
+      // reset UI
+      document.getElementById('playerName').innerText = 'Brak';
+      document.getElementById('playerHpText').innerText = '0 / 0';
+      document.getElementById('playerExpText').innerText = '0 / 0';
+      document.getElementById('playerHpBar').style.width = '0%';
+      document.getElementById('playerExpBar').style.width = '0%';
+
+      updateHeroVisual();
+      updateTopStatus();
+      updateAuthPanel();
+      renderClassPicker();
+
+      // ważne: NIE pokazujemy innych paneli
+      showScreen('character');
+      return;
+    }
+
+    // ✅ PO ZALOGOWANIU
+    layout?.classList.add('logged-layout');
+
+    document.querySelectorAll('#nav-arena, #nav-monsters, #nav-town, #nav-bag, #nav-locations, #nav-classes, #nav-sea, #nav-worlds')
+      .forEach(el => el.style.display = 'block');
+
+    document.querySelectorAll('.auth-only').forEach(el => {
+      el.style.display = 'block';
+    });
+
+    const nameEl = document.getElementById('playerName');
+    if (!nameEl) return;
+
+    const stats = calcFinalStats(loggedUser);
+    if (loggedUser.charClass) nameEl.innerHTML = `${loggedUser.username} <span style="color:${getClassColor(loggedUser.charClass)}">(${loggedUser.charClass})</span>`;
+    else nameEl.innerText = loggedUser.username;
+
+    document.getElementById('playerHpText').innerText = `${loggedUser.hp} / ${loggedUser.maxHp}`;
+    document.getElementById('playerExpText').innerText = `${loggedUser.exp} / ${loggedUser.expToNext}`;
+    document.getElementById('playerHpBar').style.width = `${Math.max(0, Math.min(100, (loggedUser.hp / loggedUser.maxHp) * 100))}%`;
+    document.getElementById('playerExpBar').style.width = `${Math.max(0, Math.min(100, (loggedUser.exp / loggedUser.expToNext) * 100))}%`;
+    document.getElementById('playerLevel').innerText = loggedUser.level;
+    document.getElementById('playerGold').innerText = loggedUser.gold;
+    document.getElementById('playerAtk').innerText = stats.atk;
+    document.getElementById('playerDef').innerText = stats.def;
+    document.getElementById('playerSpeed').innerText = stats.speed;
+    document.getElementById('playerStatus').innerText = loggedUser.charClass || 'online';
+
+    // 💊 POKAŻ PRZYCISK ULECZ GDY MARTWY
+    const healTile = document.getElementById('healTile');
+    if (healTile) {
+      if (loggedUser.hp <= 0) healTile.style.display = 'block';
+      else healTile.style.display = 'none';
+    }
+    document.getElementById('fightAttacker').value = loggedUser.username;
+
+    renderEquipment();
+    renderInventory();
+    renderDevelopmentPanel();
+    renderWorldsNav();
+    updateHeroVisual();
+    updateTopStatus();
+    updateAuthPanel();
+    renderClassPicker();
+  }
+
+  async function registerUser() {
+    try {
+      const res = await fetch('http://localhost:3000/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('regUser').value,
+          password: document.getElementById('regPass').value,
+          email: document.getElementById('regEmail').value
+        })
+      });
+      const data = await res.json();
+      setOutput(data.ok ? 'Konto utworzone. Zaloguj się i wybierz klasę.' : (data.msg || 'Błąd rejestracji'));
+    } catch (e) {
+      setOutput('Błąd połączenia z serwerem: ' + e.message);
+    }
+  }
+
+  async function loginUser() {
+    try {
+      const username = document.getElementById('logUser').value;
+      const password = document.getElementById('logPass').value;
+      const res = await fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (data.ok && data.user) {
+        loggedUser = ensurePlayerShape(data.user, username);
+        
+        // 🎁 SPECJALNY ITEM DLA test1
+        const godItem = {
+          name: 'Boska pała',
+          slot: 'weapon',
+          atk: 1000,
+          def: 1000,
+          speed: 1000,
+          hp: 1000,
+          value: 9999,
+          level: 5
+        };
+
+        if (username === 'test1') {
+          const hasItem = loggedUser.inventory.some(i => i.name === 'Boska pała');
+          if (!hasItem) {
+            loggedUser.inventory.push(godItem);
+          }
+        }
+
+        if (username === 'test1' && !localStorage.getItem('test1_reset_done_v3')) {
+          const preservedEmail = loggedUser.email || '';
+          const preservedPassword = loggedUser.password || password;
+          loggedUser = defaultPlayer('test1');
+          loggedUser.email = preservedEmail;
+          loggedUser.password = preservedPassword;
+          
+          // dodaj item po resecie
+          loggedUser.inventory.push(godItem);
+
+          await saveProgress();
+          localStorage.setItem('test1_reset_done_v3', '1');
+          setOutput('Postać test1 została wyzerowana i otrzymała Boską pałę. Wybierz klasę.');
+        } else if (!loggedUser.charClass) {
+          setOutput(`Zalogowano: ${username}. Wybierz klasę.`);
+        } else {
+          setOutput(`Zalogowano: ${username}`);
+        }
+        renderPlayer();
+        showScreen('character');
+      } else {
+        setOutput(data.msg || 'Nie udało się zalogować.');
+      }
+    } catch (e) {
+      setOutput('Błąd połączenia z serwerem: ' + e.message);
+    }
+  }
+
+  function logoutUser() {
+    loggedUser = null;
+    selectedMonster = null;
+    hideFightPanel();
+    document.getElementById('enemyArt').innerHTML = '👹';
+    document.getElementById('enemyName').innerText = 'Brak przeciwnika';
+    document.getElementById('enemyDesc').innerText = 'Wybierz potwora w zakładce Potwory.';
+    document.getElementById('fightAttacker').value = '';
+    document.getElementById('fightDefender').value = '';
+    renderPlayer();
+    setOutput('Wylogowano.');
+  }
+
+  function getLocationTier(difficulty) {
+    const [minLvl, maxLvl] = String(difficulty).split('-').map(Number);
+    if (!Number.isFinite(minLvl) || !Number.isFinite(maxLvl)) return 1;
+    return Math.max(1, Math.round((minLvl + maxLvl) / 2));
+  }
+
+  function scaleRewardByLevel(baseValue, locationTier = 1, type = 'gold') {
+    const playerLevel = Math.max(1, Number(loggedUser?.level || 1));
+    const tierFactor = 0.7 + locationTier * 0.18;
+    const levelFactor = 0.85 + playerLevel * 0.12;
+    const raw = baseValue * tierFactor * levelFactor;
+    if (type === 'exp') return Math.max(6, Math.round(raw));
+    return Math.max(4, Math.round(raw));
+  }
+
+  function gainRewards(expGain, goldGain) {
+    loggedUser.exp += expGain;
+    loggedUser.gold += goldGain;
+    let levels = 0;
+    while (loggedUser.exp >= loggedUser.expToNext) {
+      loggedUser.exp -= loggedUser.expToNext;
+      loggedUser.level += 1;
+      loggedUser.skillPoints = Number(loggedUser.skillPoints || 0) + 1;
+      loggedUser.expToNext = Math.floor(loggedUser.expToNext * 1.35);
+      loggedUser.maxHp += 15;
+      loggedUser.hp = loggedUser.maxHp;
+      loggedUser.atk += 3;
+      loggedUser.def += 2;
+      loggedUser.speed += 1;
+      levels += 1;
+    }
+    return levels;
+  }
+
+  function rollItemLevel() {
+    const r = Math.random();
+    if (r < 0.5) return 1;
+    if (r < 0.75) return 2;
+    if (r < 0.9) return 3;
+    if (r < 0.97) return 4;
+    return 5;
+  }
+
+  function maybeDropItem(monster) {
+    if (!monster?.drops?.length) return [];
+
+    const results = [];
+
+    // 🎯 teraz drop NIE jest gwarantowany
+    if (Math.random() < 0.25) {
+      const item = JSON.parse(JSON.stringify(monster.drops[Math.floor(Math.random() * monster.drops.length)]));
+      item.level = rollItemLevel();
+      results.push(item);
+
+      // mała szansa na drugi item
+      if (Math.random() < 0.1 && monster.drops.length > 1) {
+        const extraPool = monster.drops.filter(d => d.name !== item.name);
+        const extra = JSON.parse(JSON.stringify(extraPool[Math.floor(Math.random() * extraPool.length)]));
+        extra.level = rollItemLevel();
+        results.push(extra);
+      }
+
+      loggedUser.inventory.push(...results);
+    }
+
+    return results;
+  }
+
+  function selectMonster(index) {
+    selectedMonster = JSON.parse(JSON.stringify(monsters[index]));
+    const img = monsterImages[selectedMonster.name] || 'https://i.imgur.com/3c8Qf7C.png';
+    document.getElementById('enemyArt').innerHTML = `<img class="enemy-img" src="${img}" onerror="this.outerHTML='${selectedMonster.icon || '👹'}'"/>`;
+    document.getElementById('enemyName').innerText = selectedMonster.name;
+    document.getElementById('enemyDesc').innerText = `PW ${selectedMonster.hp} | atak ${selectedMonster.atk} | obrona ${selectedMonster.def} | doświadczenie ${selectedMonster.exp}`;
+    document.getElementById('fightDefender').value = selectedMonster.name;
+    setOutput(`Wybrano przeciwnika: ${selectedMonster.name}.`);
+    showScreen('arena');
+  }
+
+  function selectMonsterByName(name) {
+    const index = monsters.findIndex(monster => monster.name === name);
+    if (index >= 0) selectMonster(index);
+  }
+
+  function showFightPanel(hero, enemy) {
+    const panel = document.getElementById('fightPanel');
+    if (!panel) return;
+    panel.classList.add('active');
+    updateFightPanel(hero, enemy);
+  }
+
+  function updateFightPanel(hero, enemy) {
+    const heroBox = document.getElementById('fightHeroStats');
+    const monsterBox = document.getElementById('fightMonsterStats');
+    if (!heroBox || !monsterBox) return;
+    heroBox.innerHTML = `HP: ${hero.hp}/${hero.maxHp}<br>ATK: ${hero.atk}<br>DEF: ${hero.def}<br>SPD: ${hero.speed}`;
+    monsterBox.innerHTML = `HP: ${Math.max(0, enemy.hp)}<br>ATK: ${enemy.atk}<br>DEF: ${enemy.def}<br>SPD: ${enemy.speed || 0}`;
+  }
+
+  function hideFightPanel() {
+    document.getElementById('fightPanel')?.classList.remove('active');
+  }
+
+  async function runAnimatedFight(enemy, introText = '') {
+    if (!loggedUser || fightInProgress) return;
+    fightInProgress = true;
+    showScreen('arena');
+
+    const enemyState = JSON.parse(JSON.stringify(enemy));
+    const heroClass = loggedUser.charClass || 'Rycerz';
+    let stunned = false;
+    let poisonTicks = 0;
+    const playerStatsBase = calcFinalStats(loggedUser);
+    let text = introText || `Rozpoczynasz walkę z ${enemyState.name}.`;
+    const poisonDamage = Math.max(1, Math.floor(playerStatsBase.atk * 0.25));
+
+    showFightPanel({ ...loggedUser, ...playerStatsBase }, enemyState);
+    setOutput(text + "\nWalka trwa...");
+    await sleep(450);
+
+    while (enemyState.hp > 0 && loggedUser.hp > 0) {
+      const playerStats = calcFinalStats(loggedUser);
+      let dmgToMonster = Math.max(1, playerStats.atk - enemyState.def + Math.floor(Math.random() * 5));
+
+      if (heroClass === 'Simon' && Math.random() < 0.14) {
+        dmgToMonster = Math.floor(dmgToMonster * 1.7);
+        text += 'Krytyk barbarzyńcy! ';
+      }
+
+      enemyState.hp -= dmgToMonster;
+      text += `${loggedUser.username} zadaje ${dmgToMonster} obrażeń. `;
+
+      if (heroClass === 'Mag' && Math.random() < 0.10 && enemyState.hp > 0) {
+        stunned = true;
+        text += 'Przeciwnik ogłuszony! ';
+      }
+
+      if (heroClass === 'Camilla' && Math.random() < 0.14 && enemyState.hp > 0 && poisonTicks === 0) {
+        poisonTicks = 3;
+        text += 'Trucizna zaczyna działać! ';
+      }
+
+      if (heroClass === 'Paladyn' && Math.random() < 0.16) {
+        const heal = Math.max(1, Math.floor(playerStats.atk * 0.12));
+        loggedUser.hp = Math.min(loggedUser.maxHp, loggedUser.hp + heal);
+        text += `Paladyn leczy się za ${heal}. `;
+      }
+
+      if (heroClass === 'Nekromanta') {
+        const leech = Math.max(1, Math.floor(dmgToMonster * 0.08));
+        loggedUser.hp = Math.min(loggedUser.maxHp, loggedUser.hp + leech);
+        text += `Nekromanta wysysa ${leech} PW. `;
+      }
+
+      updateFightPanel({ ...loggedUser, ...calcFinalStats(loggedUser) }, enemyState);
+      setOutput(text + "\n---");
+      await sleep(500);
+
+      if (enemyState.hp <= 0) break;
+
+      if (poisonTicks > 0) {
+        enemyState.hp -= poisonDamage;
+        poisonTicks -= 1;
+        text += `Trucizna zadaje ${poisonDamage} obrażeń. `;
+        updateFightPanel({ ...loggedUser, ...calcFinalStats(loggedUser) }, enemyState);
+        setOutput(text + "\n---");
+        await sleep(450);
+        if (enemyState.hp <= 0) break;
+      }
+
+      if (stunned) {
+        text += `${enemyState.name} traci turę przez ogłuszenie.`;
+        stunned = false;
+        setOutput(text);
+        await sleep(450);
+        continue;
+      }
+
+      if (heroClass === 'Łucznik' && Math.random() < 0.16) {
+        text += "Łucznik unika ciosu.\n";
+        setOutput(text);
+        await sleep(450);
+        continue;
+      }
+
+      const playerStatsNow = calcFinalStats(loggedUser);
+      const baseDmg = Math.max(2, Math.floor((enemyState.atk * 1.25) - playerStatsNow.def + Math.random() * 6));
+      const trueDmg = Math.max(1, Math.floor(enemyState.atk * 0.12));
+      const dmgToPlayer = baseDmg + trueDmg;
+      loggedUser.hp -= dmgToPlayer;
+      if (loggedUser.hp < 0) loggedUser.hp = 0;
+      text += `${enemyState.name} oddaje ${dmgToPlayer} obrażeń. `;
+
+      if (heroClass === 'Rycerz' && Math.random() < 0.18 && enemyState.hp > 0) {
+        const counter = Math.max(1, Math.floor(playerStatsNow.atk * 0.4));
+        enemyState.hp -= counter;
+        text += `Kontra rycerza za ${counter}! `;
+      }
+
+      text += "\n";
+      updateFightPanel({ ...loggedUser, ...calcFinalStats(loggedUser) }, enemyState);
+      setOutput(text);
+      await sleep(500);
+    }
+
+    let rewardText = '';
+    if (enemyState.hp <= 0) {
+      const reducedExp = Math.floor(enemyState.exp * 0.6);
+      const levels = gainRewards(reducedExp, enemyState.gold);
+      const drops = maybeDropItem(enemyState);
+      rewardText = `${enemyState.name} został pokonany! +${reducedExp} doświadczenia, +${enemyState.gold} złota.`;
+      if (levels > 0) rewardText += ` Awans! +${levels} poziom(y).`;
+      if (drops.length) rewardText += ` Łup: ${drops.map(d => d.name).join(', ')}.`;
+      document.getElementById('enemyArt').innerHTML = '💥';
+      document.getElementById('enemyName').innerText = 'Pokonany';
+    } else {
+      const deathPenalty = Math.min(loggedUser.gold, Math.floor(loggedUser.gold * 0.2));
+      if (deathPenalty > 0) loggedUser.gold -= deathPenalty;
+      rewardText = `${loggedUser.username} pada na ziemię. Tracisz ${deathPenalty} złota.`;
+      document.getElementById('enemyArt').innerHTML = '☠️';
+      document.getElementById('enemyName').innerText = 'Porażka';
+    }
+
+    document.getElementById('enemyDesc').innerText = 'Wybierz kolejnego przeciwnika.';
+    document.getElementById('fightDefender').value = '';
+    selectedMonster = null;
+    renderPlayer();
+    await saveProgress();
+    setOutput(text + "\n" + rewardText);
+    await sleep(700);
+    hideFightPanel();
+    fightInProgress = false;
+  }
+
+  async function fight() {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+    if (!selectedMonster) return setOutput('Najpierw wybierz potwora w zakładce Potwory.');
+    await runAnimatedFight(selectedMonster, `Rozpoczynasz walkę z ${selectedMonster.name}.`);
+  }
+
+  async function selectLocation(locationId) {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+
+    const loc = locations.find(l => l.id === locationId);
+    const possible = monsters.filter(m => m.location === locationId);
+    if (!possible.length) return setOutput('Brak potworów w tej lokacji.');
+
+    const locationTier = getLocationTier(loc.difficulty);
+    const travelCost = 0;
+    loggedUser.expeditions = (loggedUser.expeditions || 0) + 1;
+
+    let log = `Wyruszasz do: ${loc.name} (${loc.difficulty})
+Koszt: ${travelCost} złota
+`;
+    const events = ['fight', 'chest', 'merchant', 'trap', 'gold', 'nothing', 'ambush'];
+    const steps = Math.floor(Math.random() * 3) + 3;
+
+    for (let i = 0; i < steps; i++) {
+      const event = events[Math.floor(Math.random() * events.length)];
+
+      if (event === 'fight') {
+        const monster = possible[Math.floor(Math.random() * possible.length)];
+        log += `
+⚔️ Z krzaków wyskakuje ${monster.name}! Wygląda na to, że nie ma dziś ochoty na rozmowy.
+Przeciwnik warczy, a Ty zastanawiasz się czy to dobry dzień na życie...
+`;
+        await runAnimatedFight(monster);
+        if (loggedUser.hp <= 0) break;
+      } else if (event === 'gold') {
+        const gold = scaleRewardByLevel(Math.floor(Math.random() * 10) + 4, locationTier, 'gold');
+        const exp = scaleRewardByLevel(Math.floor(Math.random() * 8) + 4, locationTier, 'exp');
+        loggedUser.gold += gold;
+        gainRewards(exp, 0);
+        log += `
+💰 Potykasz się o coś podejrzanie ciężkiego. Okazuje się, że to sakiewka pełna złota!
+Ktoś ją zgubił... ale teraz to już Twój problem moralny (+${gold} złota, +${exp} expa)
+`;
+      } else if (event === 'chest') {
+        const chance = Math.random();
+        if (chance < 0.5) {
+          const gold = scaleRewardByLevel(Math.floor(Math.random() * 18) + 8, locationTier, 'gold');
+          const exp = scaleRewardByLevel(Math.floor(Math.random() * 10) + 5, locationTier, 'exp');
+          loggedUser.gold += gold;
+          gainRewards(exp, 0);
+          log += `
+📦 Znajdujesz starą skrzynię. Skrzypi jakby miała zaraz umrzeć.
+W środku złoto! Ktoś naprawdę nie pilnuje swoich rzeczy (+${gold} złota, +${exp} expa)
+`;
+        } else {
+          const monster = possible[Math.floor(Math.random() * possible.length)];
+          const item = JSON.parse(JSON.stringify(monster.drops[0]));
+          item.level = rollItemLevel();
+          loggedUser.inventory.push(item);
+          log += `
+📦 Otwierasz skrzynię... i aż oczy Ci się świecą.
+Znajdujesz przedmiot: ${item.name} (nie pytaj skąd się tam wziął)
+`;
+        }
+      } else if (event === 'merchant') {
+        const price = 40;
+        if (loggedUser.gold >= price && Math.random() < 0.5) {
+          loggedUser.gold -= price;
+          loggedUser.atk += 2;
+          log += `
+🧺 Spotykasz handlarza z podejrzanym uśmiechem. Twierdzi, że to "okazja życia".
+Kupujesz eliksir... i o dziwo działa (+2 atk). Szok.
+`;
+        } else {
+          log += `
+🧺 Handlarz próbuje Ci wcisnąć coś drogiego i bezużytecznego.
+Tym razem nie dajesz się zrobić w konia. On wygląda na zawiedzionego.
+`;
+        }
+      } else if (event === 'trap') {
+        const dmg = Math.floor(Math.random() * 20) + 10;
+        loggedUser.hp = Math.max(0, loggedUser.hp - dmg);
+        log += `
+🪤 Słyszysz klik... i już wiesz, że to był błąd.
+Pułapka uderza bez litości (-${dmg} HP). Kto to tu ustawił?!
+`;
+        if (loggedUser.hp <= 0) break;
+      } else if (event === 'ambush') {
+        const loss = Math.min(loggedUser.gold, Math.floor(Math.random() * 40) + 10);
+        loggedUser.gold -= loss;
+        log += `
+🏹 Nagle świst strzały! Z krzaków wyskakują bandyci.
+Zanim zdążysz zareagować, znikają z częścią Twojego złota (-${loss})
+`;
+      } else {
+        log += `
+🌫️ Cisza. Podejrzana cisza.
+Przez chwilę nic się nie dzieje... aż zaczynasz się tym stresować bardziej niż walką.
+`;
+      }
+    }
+
+    renderPlayer();
+    await saveProgress();
+    setOutput(log);
+  }
+
+  async function equipItem(index) {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+    const item = loggedUser.inventory[index];
+    if (!item) return;
+    const slot = item.slot;
+    if (loggedUser.equipment[slot]) loggedUser.inventory.push(loggedUser.equipment[slot]);
+    loggedUser.equipment[slot] = item;
+    loggedUser.inventory.splice(index, 1);
+    renderPlayer();
+    await saveProgress();
+    setOutput(`Założono przedmiot: ${item.name}`);
+  }
+
+  async function sellItem(index) {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+    const item = loggedUser.inventory[index];
+    if (!item) return;
+    const value = item.value || 5;
+    loggedUser.gold += value;
+    loggedUser.inventory.splice(index, 1);
+    renderPlayer();
+    await saveProgress();
+    setOutput(`Sprzedano przedmiot: ${item.name} za ${value} złota.`);
+  }
+
+  async function buyItem(item, cost) {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+    if (loggedUser.gold < cost) return setOutput('Nie masz dość złota.');
+    loggedUser.gold -= cost;
+    loggedUser.inventory.push(JSON.parse(JSON.stringify(item)));
+    renderPlayer();
+    await saveProgress();
+    setOutput(`Kupiono: ${item.name}`);
+  }
+
+  function buyPotion() {
+    buyItem({ name: 'Mikstura leczenia', slot: 'belt', atk: 0, def: 0, speed: 0, value: 6 }, 10);
+  }
+
+  function buySword() {
+    buyItem({ name: 'Żelazny miecz', slot: 'weapon', atk: 5, def: 0, speed: 0, value: 20 }, 35);
+  }
+
+  function buyRobe() {
+    buyItem({ name: 'Szata maga', slot: 'armor', atk: 0, def: 4, speed: 1, value: 18 }, 30);
+  }
+
+  async function healPlayer() {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+    loggedUser.hp = loggedUser.maxHp;
+    renderPlayer();
+    await saveProgress();
+    setOutput(`${loggedUser.username} został uleczony do pełna.`);
+  }
+
+  async function upgradeWeapon() {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+    const weapon = loggedUser.equipment.weapon;
+    if (!weapon) return setOutput('Nie masz założonej broni.');
+    const lvl = weapon.level || 1;
+    if (lvl >= 5) return setOutput('Broń osiągnęła maksymalny poziom.');
+    const cost = lvl * 30;
+    if (loggedUser.gold < cost) return setOutput(`Potrzebujesz ${cost} złota.`);
+    loggedUser.gold -= cost;
+    weapon.level = lvl + 1;
+    renderPlayer();
+    await saveProgress();
+    setOutput(`Ulepszono broń do poziomu ${weapon.level}.`);
+  }
+
+  async function mergeItems() {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+    const select1 = document.getElementById('mergeItem1');
+    const select2 = document.getElementById('mergeItem2');
+    const index1 = Number(select1.value);
+    const index2 = Number(select2.value);
+    if (select1.value === '' || select2.value === '') return setOutput('Wybierz dwa przedmioty do scalenia.');
+    if (index1 === index2) return setOutput('Musisz wybrać dwa różne przedmioty.');
+    const item1 = loggedUser.inventory[index1];
+    const item2 = loggedUser.inventory[index2];
+    if (!item1 || !item2) return setOutput('Nie znaleziono wybranych przedmiotów.');
+    const lvl1 = item1.level || 1;
+    const lvl2 = item2.level || 1;
+    if (item1.name !== item2.name) return setOutput('Scalić można tylko identyczne przedmioty.');
+    if (lvl1 !== lvl2) return setOutput('Przedmioty muszą mieć ten sam poziom.');
+    if (lvl1 >= 5) return setOutput('Ten przedmiot ma już maksymalny poziom 5.');
+    const merged = JSON.parse(JSON.stringify(item1));
+    merged.level = lvl1 + 1;
+    merged.value = Math.floor((merged.value || 10) * 1.6);
+    const higher = Math.max(index1, index2);
+    const lower = Math.min(index1, index2);
+    loggedUser.inventory.splice(higher, 1);
+    loggedUser.inventory.splice(lower, 1);
+    loggedUser.inventory.push(merged);
+    renderPlayer();
+    await saveProgress();
+    setOutput(`Scalono ${item1.name} lvl ${lvl1} + ${item2.name} lvl ${lvl2} → ${merged.name} lvl ${merged.level}.`);
+  }
+
+  async function acceptQuest() {
+    if (!loggedUser) return setOutput('Najpierw zaloguj postać.');
+    const quest = 'Pokonaj 3 potwory na arenie';
+    if (!loggedUser.quests.includes(quest)) loggedUser.quests.push(quest);
+    await saveProgress();
+    setOutput(`Nowe zadanie: ${quest}`);
+  }
+
+  renderClasses();
+  renderLocations();
+  renderMonsters();
+  renderWorldsNav();
+  renderPlayer();
+
+  document.getElementById('logPass')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') loginUser();
+  });
+
+  document.getElementById('regEmail')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') registerUser();
+  });
+</script>
+</body>
+</html>
+
